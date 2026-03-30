@@ -31,7 +31,8 @@ class LoanSlipController extends Controller
         $request->validate([
             'admin_id' => 'required',
             'student_id' => 'required',
-            'books' => 'required|array'
+            'books' => 'required|array',
+            'books.*' => 'exists:books,id'
         ]);
 
         $loan = LoanSlip::create([
@@ -39,22 +40,31 @@ class LoanSlipController extends Controller
             'student_id' => $request->student_id,
             'start_date' => now(),
             'due_date' => now()->addDays(14),
-            'status' => 'borrowed'
+            'status' => 'borrowed',
+            'total_quantity' => 0,
+            'total_fine' => 0
         ]);
 
-        // 🔥 Lưu nhiều sách
+        $totalQuantity = 0;
+
         foreach ($request->books as $bookId) {
             LoanSlipDetail::create([
                 'loan_slip_id' => $loan->id,
-                'book_id' => $bookId
+                'book_id' => $bookId,
+                'quantity' => 1,
+                'status' => 'borrowed'
             ]);
+
+            $totalQuantity++;
         }
 
+        $loan->update([
+            'total_quantity' => $totalQuantity
+        ]);
+
         return redirect()->route('loan_slips.index')
-            ->with('success','Thêm phiếu mượn thành công');
+            ->with('success','Thêm thành công');
     }
-
-
 
     public function edit(LoanSlip $loanSlip)
     {
@@ -77,17 +87,32 @@ class LoanSlipController extends Controller
         $loanSlip->update([
             'admin_id' => $request->admin_id,
             'student_id' => $request->student_id,
+            'start_date' => $request->start_date,
+            'due_date' => $request->due_date,
+            'status' => $request->status,
+            'return_date' => $request->status == 'returned'
+                ? ($request->return_date ?? now())
+                : null,
         ]);
 
         $loanSlip->details()->delete();
 
+        $totalQuantity = 0;
 
         foreach ($request->books as $bookId) {
             LoanSlipDetail::create([
                 'loan_slip_id' => $loanSlip->id,
-                'book_id' => $bookId
+                'book_id' => $bookId,
+                'quantity' => 1,
+                'status' => 'borrowed'
             ]);
+
+            $totalQuantity++;
         }
+
+        $loanSlip->update([
+            'total_quantity' => $totalQuantity
+        ]);
 
         return redirect()->route('loan_slips.index')
             ->with('success','Cập nhật thành công');

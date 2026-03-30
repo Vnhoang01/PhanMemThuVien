@@ -34,7 +34,7 @@ class ClassesController extends Controller
             'major_id' => $request->major_id
         ]);
 
-        return redirect()->route('classes.index');
+        return redirect()->route('classes.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Classes $class)
@@ -55,12 +55,12 @@ class ClassesController extends Controller
             'major_id' => $request->major_id
         ]);
 
-        return redirect()->route('classes.index');
+        return redirect()->route('classes.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Classes $class)
     {
         $class->delete();
-        return redirect()->route('classes.index');
+        return redirect()->route('classes.index')->with('success', 'Xóa thành công');
     }
 }

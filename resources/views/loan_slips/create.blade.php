@@ -29,7 +29,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Admin</label>
                             <select name="admin_id"
-                                    class="form-select @error('admin_id') is-invalid @enderror">
+                                    class="form-select @error('admin_id') is-invalid @enderror" required>
                                 <option value="">-- Chọn admin --</option>
                                 @foreach($admins as $admin)
                                     <option value="{{ $admin->id }}"
@@ -38,13 +38,16 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('admin_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Student --}}
                         <div class="col-md-6">
                             <label class="form-label">Sinh viên</label>
                             <select name="student_id"
-                                    class="form-select @error('student_id') is-invalid @enderror">
+                                    class="form-select @error('student_id') is-invalid @enderror" required>
                                 <option value="">-- Chọn sinh viên --</option>
                                 @foreach($students as $student)
                                     <option value="{{ $student->id }}"
@@ -53,47 +56,61 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('student_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Dates --}}
                         <div class="col-md-6">
                             <label class="form-label">Ngày mượn</label>
                             <input type="date" name="start_date"
-                                   value="{{ old('start_date') }}"
-                                   class="form-control">
+                                   value="{{ old('start_date', date('Y-m-d')) }}"
+                                   class="form-control @error('start_date') is-invalid @enderror" required>
+                            @error('start_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Hạn trả</label>
                             <input type="date" name="due_date"
                                    value="{{ old('due_date') }}"
-                                   class="form-control">
+                                   class="form-control @error('due_date') is-invalid @enderror">
+                            @error('due_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Status --}}
                         <div class="col-md-6">
                             <label class="form-label">Trạng thái</label>
                             <select name="status" class="form-select">
-                                <option value="borrowed" {{ old('status')=='borrowed'?'selected':'' }}>Đang mượn
-                                </option>
+                                <option value="borrowed">Đang mượn</option>
                             </select>
                         </div>
 
-                        {{-- Books--}}
+                        {{-- Books --}}
                         <div class="col-12">
                             <label class="form-label">Chọn sách</label>
 
-                            <select name="books[]" multiple
+                            <select name="books[]"
+                                    multiple
                                     class="form-select @error('books') is-invalid @enderror"
-                                    size="6">
+                                    size="6" required>
 
                                 @foreach($books as $book)
-                                    <option value="{{ $book->id }}">
+                                    <option value="{{ $book->id }}"
+                                        {{ collect(old('books'))->contains($book->id) ? 'selected' : '' }}>
                                         {{ $book->name }}
                                     </option>
                                 @endforeach
 
                             </select>
+
+                            @error('books')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
 
                             <small class="text-muted">Giữ Ctrl để chọn nhiều sách</small>
                         </div>

@@ -15,7 +15,7 @@
 
         <!-- Thông báo -->
         @if(session('success'))
-            <div class="alert alert-success">
+            <div class="alert alert-success shadow-sm">
                 {{ session('success') }}
             </div>
         @endif
@@ -54,7 +54,7 @@
                                 <td class="text-center">
                                     <a href="{{ route('majors.edit',$major->id) }}"
                                        class="btn btn-sm btn-warning">
-                                        ✏️
+                                        <i class="bi bi-pencil"></i>
                                     </a>
 
                                     <form action="{{ route('majors.destroy',$major->id) }}"
@@ -65,7 +65,7 @@
                                         <button type="submit"
                                                 class="btn btn-sm btn-danger"
                                                 onclick="return confirm('Bạn có chắc muốn xoá?')">
-                                            🗑️
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </td>

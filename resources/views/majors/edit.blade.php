@@ -4,7 +4,7 @@
 
     <div class="container mt-4">
 
-        <h2 class="fw-bold mb-4">✏️ Cập nhật thể loại</h2>
+        <h2 class="fw-bold mb-4">✏️ Cập nhật ngành</h2>
 
         <!-- Hiển thị lỗi -->
         @if ($errors->any())
@@ -20,7 +20,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
 
-                <form action="{{ route('categories.update', $category->id) }}" method="POST">
+                <form action="{{ route('majors.update', $major->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -28,12 +28,12 @@
 
                         <!-- Name -->
                         <div class="col-md-6">
-                            <label class="form-label">Tên thể loại</label>
+                            <label class="form-label">Tên ngành</label>
                             <input type="text"
                                    name="name"
-                                   value="{{ old('name', $category->name) }}"
-                                   class="form-control @error('name') is-invalid @enderror"
-                                   placeholder="Nhập tên thể loại">
+                                   value="{{ old('name', $major->name) }}"
+                                   class="form-control"
+                                   placeholder="Nhập tên ngành">
 
                             @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -42,11 +42,11 @@
 
                         <!-- Description -->
                         <div class="col-12">
-                            <label class="form-label">Mô tả</label>
+                            <label class="form-label mt-3">Mô tả ngành</label>
                             <textarea name="description"
-                                      class="form-control @error('description') is-invalid @enderror"
+                                      class="form-control"
                                       rows="4"
-                                      placeholder="Nhập mô tả...">{{ old('description', $category->description) }}</textarea>
+                                      placeholder="Nhập mô tả ngành...">{{ old('description', $major->description) }}</textarea>
 
                             @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -61,7 +61,7 @@
                             <i class="bi bi-save"></i> Cập nhật
                         </button>
 
-                        <a href="{{ route('categories.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('majors.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Quay lại
                         </a>
                     </div>

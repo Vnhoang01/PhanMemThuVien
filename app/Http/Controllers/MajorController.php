@@ -27,7 +27,7 @@ class MajorController extends Controller
 
         Major::create($request->all());
 
-        return redirect()->route('majors.index');
+        return redirect()->route('majors.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Major $major)
@@ -44,13 +44,13 @@ class MajorController extends Controller
 
         $major->update($request->all());
 
-        return redirect()->route('majors.index');
+        return redirect()->route('majors.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Major $major)
     {
         $major->delete();
 
-        return redirect()->route('majors.index');
+        return redirect()->route('majors.index')->with('success', 'Xóa thành công');
     }
 }

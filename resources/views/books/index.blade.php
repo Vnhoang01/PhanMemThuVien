@@ -12,6 +12,13 @@
             </a>
         </div>
 
+        <!-- Thông báo -->
+        @if(session('success'))
+            <div class="alert alert-success shadow-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-body">
 
@@ -25,7 +32,7 @@
                             <th>Tác giả</th>
                             <th>Thể loại</th>
                             <th>NXB</th>
-                            <th>Năm</th>
+                            <th>Năm xuất bản</th>
                             <th>Tổng sách</th>
                             <th>Còn sách</th>
                             <th>Trạng thái</th>

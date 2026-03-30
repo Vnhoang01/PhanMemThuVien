@@ -17,12 +17,25 @@ class AdminController extends Controller
 
         // Tìm kiếm
         if ($request->keyword) {
-            $query->where('name', 'like', '%' . $request->keyword . '%')
-                ->orWhere('email', 'like', '%' . $request->keyword . '%');
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', '%' . $keyword . '%')
+                    ->orWhere('email', 'like', '%' . $keyword . '%');
+
+                // Map role tiếng Việt → DB
+                if (strtolower($keyword) == 'quản trị') {
+                    $q->orWhere('role', 'admin');
+                }
+
+                if (strtolower($keyword) == 'thủ thư') {
+                    $q->orWhere('role', 'staff');
+                }
+            });
         }
 
         // Phân trang
-        $admins = $query->orderBy('id', 'desc')->paginate(3);
+        $admins = $query->orderBy('id', 'desc')->paginate(4);
         return view('admins.index', compact('admins'));
     }
 
@@ -50,7 +63,6 @@ class AdminController extends Controller
             'email'=>$request->email,
             'password'=>Hash::make($request->password),
             'phone_number'=>$request->phone_number,
-            'address'=>$request->address,
             'role'=>$request->role
         ]);
 
@@ -88,7 +100,7 @@ class AdminController extends Controller
             'role' => $request->role,
         ];
 
-        // ✅ Chỉ update password nếu có nhập
+        // Chỉ update password nếu có nhập
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
@@ -104,6 +116,6 @@ class AdminController extends Controller
     public function destroy(Admin $admin)
     {
         $admin->delete();
-        return redirect()->route('admins.index');
+        return redirect()->route('admins.index')->with('success', 'Xóa thành công');
     }
 }

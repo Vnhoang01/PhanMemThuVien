@@ -30,7 +30,7 @@ class CategoryController extends Controller
             'description' => $request->description
         ]);
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Category $category)
@@ -49,12 +49,12 @@ class CategoryController extends Controller
             'description' => $request->description
         ]);
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Xóa thành công');
     }
 }

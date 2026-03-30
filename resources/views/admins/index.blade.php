@@ -13,7 +13,7 @@
             </a>
         </div>
 
-        <!-- Alert -->
+        <!-- Thông báo -->
         @if(session('success'))
             <div class="alert alert-success shadow-sm">
                 {{ session('success') }}
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Table -->
-        <div class="card shadow-sm">
+        <div class="bg-white p-3 rounded shadow-sm">
             <div class="card-body">
 
                 <div class="table-responsive">
@@ -62,7 +62,7 @@
                         @forelse($admins as $a)
                             <tr>
 
-                                <td class="text-muted">#{{ $loop->iteration }}</td>
+                                <td class="text-muted">#{{ $loop->iteration + ($admins->currentPage() - 1) * $admins->perPage() }}</td>
 
                                 <td class="fw-semibold">{{ $a->name }}</td>
 
@@ -114,11 +114,6 @@
                         </tbody>
 
                     </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="mt-3">
-                    {{ $admins->withQueryString()->links() }}
                 </div>
 
             </div>

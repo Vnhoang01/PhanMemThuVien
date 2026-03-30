@@ -30,8 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('loan_slips', function (Blueprint $table) {
-            $table->foreignId('book_id')->constrained()->cascadeOnDelete();
-        });
+        Schema::dropIfExists('loan_slips');
     }
 };

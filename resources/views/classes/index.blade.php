@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        {{-- Thông báo success --}}
+        <!-- Thông báo -->
         @if(session('success'))
             <div class="alert alert-success shadow-sm">
                 {{ session('success') }}
@@ -44,7 +44,7 @@
                             <td>
                                 <a href="{{ route('classes.edit',$class->id) }}"
                                    class="btn btn-sm btn-warning">
-                                    <i class="bi bi-pencil-square"></i>
+                                    <i class="bi bi-pencil"></i>
                                 </a>
 
                                 <form action="{{ route('classes.destroy',$class->id) }}"

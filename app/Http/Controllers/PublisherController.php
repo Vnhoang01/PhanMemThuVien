@@ -28,7 +28,7 @@ class PublisherController extends Controller
 
         Publisher::create($request->all());
 
-        return redirect()->route('publishers.index');
+        return redirect()->route('publishers.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Publisher $publisher)
@@ -46,13 +46,13 @@ class PublisherController extends Controller
 
         $publisher->update($request->all());
 
-        return redirect()->route('publishers.index');
+        return redirect()->route('publishers.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Publisher $publisher)
     {
         $publisher->delete();
 
-        return redirect()->route('publishers.index');
+        return redirect()->route('publishers.index')->with('success', 'Xóa thành công');
     }
 }

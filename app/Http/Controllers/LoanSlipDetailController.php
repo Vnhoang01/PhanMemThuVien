@@ -38,7 +38,7 @@ class LoanSlipDetailController extends Controller
         LoanSlipDetail::create($request->all());
 
         return redirect()->route('loanSlipDetail.index')
-            ->with('success','Thêm chi tiết phiếu mượn thành công');
+            ->with('success','Thêm thành công');
     }
 
     /**

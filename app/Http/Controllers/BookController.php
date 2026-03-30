@@ -39,7 +39,7 @@ class BookController extends Controller
 
         Book::create($request->all());
 
-        return redirect()->route('books.index');
+        return redirect()->route('books.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Book $book)
@@ -67,12 +67,12 @@ class BookController extends Controller
 
         $book->update($request->all());
 
-        return redirect()->route('books.index');
+        return redirect()->route('books.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Book $book)
     {
         $book->delete();
-        return redirect()->route('books.index');
+        return redirect()->route('books.index')->with('success', 'Xóa thành công');
     }
 }

@@ -11,6 +11,13 @@
             </a>
         </div>
 
+        <!-- Thông báo -->
+        @if(session('success'))
+            <div class="alert alert-success shadow-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-body">
 

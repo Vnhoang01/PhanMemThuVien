@@ -63,8 +63,8 @@
                         <!-- Vai trò -->
                         <div class="col-md-6">
                             <label class="form-label">Vai trò</label>
-                            <select name="role" class="form-select">
-                                <option value="">-- Chọn vai trò --</option>
+                            <select name="role" class="form-select" required>
+                                <option value="" disabled selected hidden>-- Chọn vai trò --</option>
                                 <option value="admin">Quản trị viên</option>
                                 <option value="staff">Thủ thư</option>
                             </select>

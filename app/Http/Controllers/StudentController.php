@@ -31,7 +31,7 @@ class StudentController extends Controller
 
         Student::create($request->all());
 
-        return redirect()->route('students.index');
+        return redirect()->route('students.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Student $student)
@@ -50,13 +50,13 @@ class StudentController extends Controller
 
         $student->update($request->all());
 
-        return redirect()->route('students.index');
+        return redirect()->route('students.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Student $student)
     {
         $student->delete();
 
-        return redirect()->route('students.index');
+        return redirect()->route('students.index')->with('success', 'Xóa thành công');
     }
 }

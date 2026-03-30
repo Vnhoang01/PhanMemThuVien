@@ -26,7 +26,7 @@ class AuthorController extends Controller
         ]);
 
         Author::create($request->all());
-        return redirect()->route('authors.index');
+        return redirect()->route('authors.index')->with('success', 'Thêm thành công');
     }
 
     public function edit(Author $author)
@@ -41,12 +41,12 @@ class AuthorController extends Controller
         ]);
 
         $author->update($request->all());
-        return redirect()->route('authors.index');
+        return redirect()->route('authors.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(Author $author)
     {
         $author->delete();
-        return redirect()->route('authors.index');
+        return redirect()->route('authors.index')->with('success', 'Xóa thành công');
     }
 }
