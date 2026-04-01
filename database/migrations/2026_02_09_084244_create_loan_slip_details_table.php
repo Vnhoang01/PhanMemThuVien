@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('loan_slip_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('loan_slip_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('book_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('book_detail_id')->constrained()->cascadeOnDelete();
             $table->decimal('fine_amount', 10, 2)->default(0);
             $table->string('status')->default('Còn nguyên');
             $table->timestamps();

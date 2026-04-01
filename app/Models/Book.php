@@ -21,6 +21,11 @@ class Book extends Model
         return $this->belongsTo(Category::class , 'category_id');
     }
 
+    public function bookDetails()
+    {
+        return $this->hasMany(BookDetail::class);
+    }
+
     protected $fillable = [
         'name',
         'author_id',

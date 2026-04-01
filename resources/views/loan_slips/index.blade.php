@@ -31,8 +31,6 @@
                         <th>Ngày mượn</th>
                         <th>Hạn trả</th>
                         <th>Ngày trả</th>
-                        <th>Tổng sách</th>
-                        <th>Tiền phạt</th>
                         <th>Trạng thái</th>
                         <th width="150">Hành động</th>
                     </tr>
@@ -60,10 +58,6 @@
                                     ? \Carbon\Carbon::parse($loan->return_date)->format('d/m/Y')
                                     : 'Chưa trả' }}
                             </td>
-
-                            <td>{{ $loan->total_quantity }}</td>
-
-                            <td>{{ number_format($loan->total_fine, 0) }} ₫</td>
 
                             <td>
                                 @switch($loan->status)
@@ -127,91 +121,113 @@
     {{-- Modal --}}
     @foreach($loanSlips as $loan)
         <div class="modal fade" id="loanDetailModal{{ $loan->id }}" tabindex="-1">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
 
-                    <div class="modal-header">
+                    <!-- HEADER -->
+                    <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title">
-                            📄 Chi tiết phiếu mượn #{{ $loan->id }}
+                            📄 Phiếu mượn #{{ $loan->id }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
 
+                    <!-- BODY -->
                     <div class="modal-body">
 
-                        <p><strong>Sinh viên:</strong> {{ $loan->student->name ?? '---' }}</p>
+                        <!-- THÔNG TIN -->
+                        <div class="row mb-3">
 
-                        <p>
-                            <strong>Lớp - Ngành:</strong>
-                            {{ $loan->student->class->name ?? '---' }} -
-                            {{ $loan->student->class->major->name ?? '---' }}
-                        </p>
+                            <div class="col-md-4">
+                                <strong>Sinh viên:</strong><br>
+                                {{ $loan->student?->name }}
+                            </div>
 
-                        <p>
-                            <strong>Người duyệt:</strong>
-                            {{ $loan->admin->name ?? '---' }}
+                            <div class="col-md-4">
+                                <strong>Lớp - Ngành:</strong><br>
+                                {{ $loan->student?->class?->name }} -
+                                {{ $loan->student?->class?->major?->name }}
+                            </div>
 
-                            @if($loan->admin)
-                                @if($loan->admin->role == 'admin')
-                                    <span class="badge bg-danger">Quản trị</span>
+                            <div class="col-md-4">
+                                <strong>Người duyệt:</strong><br>
+                                {{ $loan->admin?->name }}
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-3">
+
+                            <div class="col-md-3">
+                                <strong>Ngày mượn:</strong><br>
+                                {{ $loan->start_date }}
+                            </div>
+
+                            <div class="col-md-3">
+                                <strong>Hạn trả:</strong><br>
+                                {{ $loan->due_date }}
+                            </div>
+
+                            <div class="col-md-3">
+                                <strong>Ngày trả:</strong><br>
+                                {{ $loan->return_date ?? 'Chưa trả' }}
+                            </div>
+
+                            <div class="col-md-3">
+                                <strong>Trạng thái:</strong><br>
+                                @if($loan->status == 'borrowed')
+                                    <span class="badge bg-warning text-dark">Đang mượn</span>
+                                @elseif($loan->status == 'returned')
+                                    <span class="badge bg-success">Đã trả</span>
                                 @else
-                                    <span class="badge bg-success">Thủ thư</span>
+                                    <span class="badge bg-danger">Quá hạn</span>
                                 @endif
-                            @endif
-                        </p>
+                            </div>
 
-                        <p><strong>Ngày mượn:</strong> {{ $loan->start_date }}</p>
-                        <p><strong>Hạn trả:</strong> {{ $loan->due_date }}</p>
-                        <p><strong>Ngày trả:</strong> {{ $loan->return_date ?? 'Chưa trả' }}</p>
+                        </div>
 
-                        <p><strong>Tổng sách:</strong> {{ $loan->total_quantity }}</p>
-                        <p><strong>Tổng tiền phạt:</strong> {{ number_format($loan->total_fine, 0) }} ₫</p>
+                        <hr>
 
-                        <p><strong>Trạng thái:</strong>
-                            @switch($loan->status)
-                                @case('borrowed') <span class="badge bg-warning text-dark">Đang mượn</span> @break
-                                @case('returned') <span class="badge bg-success">Đã trả</span> @break
-                                @case('overdue') <span class="badge bg-danger">Quá hạn</span> @break
-                                @default <span class="badge bg-secondary">{{ $loan->status }}</span>
-                            @endswitch
-                        </p>
+                        <!-- DANH SÁCH -->
+                        <h5>📚 Danh sách sách mượn</h5>
 
-                        <h5 class="mt-3">📚 Danh sách chi tiết:</h5>
-
-                        <table class="table table-bordered table-hover mt-2">
-                            <thead class="table-light">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-secondary">
                             <tr>
                                 <th>#</th>
                                 <th>Tên sách</th>
-                                <th>Tiền phạt</th>
+                                <th>Barcode</th>
                                 <th>Trạng thái</th>
+                                <th>Tiền phạt</th>
                             </tr>
                             </thead>
+
                             <tbody>
-                            @forelse($loan->details as $index => $detail)
+                            @forelse($loan->details as $detail)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $loop->iteration }}</td>
 
-                                    <td>{{ $detail->book->name ?? 'N/A' }}</td>
+                                    <td>{{ $detail->book?->name }}</td>
 
-                                    <td>{{ number_format($detail->fine_amount, 0) }} ₫</td>
+                                    <td>{{ $detail->bookDetail?->barcode ?? '---' }}</td>
 
                                     <td>
-                                        @if($detail->status == 'Còn nguyên')
-                                            <span class="badge bg-success">Còn nguyên</span>
-                                        @elseif($detail->status == 'Hư hỏng')
-                                            <span class="badge bg-warning text-dark">Hư hỏng</span>
-                                        @elseif($detail->status == 'Mất')
-                                            <span class="badge bg-danger">Mất</span>
+                                        @if($detail->status == 'borrowing')
+                                            <span class="badge bg-warning text-dark">Đang mượn</span>
+                                        @elseif($detail->status == 'returned')
+                                            <span class="badge bg-success">Đã trả</span>
                                         @else
-                                            <span class="badge bg-secondary">{{ $detail->status }}</span>
+                                            <span class="badge bg-danger">{{ $detail->status }}</span>
                                         @endif
                                     </td>
 
+                                    <td class="text-danger">
+                                        {{ number_format($detail->fine_amount, 0) }} ₫
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">
+                                    <td colspan="5" class="text-center text-muted">
                                         Không có dữ liệu
                                     </td>
                                 </tr>
@@ -221,6 +237,7 @@
 
                     </div>
 
+                    <!-- FOOTER -->
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">
                             Đóng
