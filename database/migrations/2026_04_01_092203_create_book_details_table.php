@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('book_details', function (Blueprint $table) {
                 $table->id();
-                $table->string('barcode')->unique();
-                $table->string('name');
+                $table->string('barcode')->nullable()->unique();
+                $table->string('name')->nullable();
                 $table->string('status')->default('available');
                 $table->foreignId('book_id')->constrained()->cascadeOnDelete();
                 $table->timestamps();

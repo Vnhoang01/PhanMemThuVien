@@ -73,8 +73,6 @@
                             <select name="class_id"
                                     class="form-select @error('class_id') is-invalid @enderror">
 
-                                <option value="">-- Chọn lớp --</option>
-
                                 @foreach($classes as $class)
                                     <option value="{{ $class->id }}"
                                         {{ old('class_id', $student->class_id) == $class->id ? 'selected' : '' }}>

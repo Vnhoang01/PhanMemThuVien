@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quản lý thư viện</title>
+    <title>Phần mềm quản lý thư viện</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -120,6 +120,10 @@
         .submenu a.active {
             background: #2563eb;
             color: #fff !important;
+        }
+
+        option:disabled {
+            color: #ccc;
         }
     </style>
 </head>

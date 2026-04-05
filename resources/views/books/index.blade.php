@@ -27,7 +27,7 @@
 
                         <thead class="table-dark">
                         <tr>
-                            <th>#</th>
+                            <th class="text-center">#</th>
                             <th>Tên</th>
                             <th>Tác giả</th>
                             <th>Thể loại</th>
@@ -68,7 +68,7 @@
                                 </td>
 
                                 <td>
-                                    @if($book->status == 'Còn sách')
+                                    @if($book->available_quantity > 0)
                                         <span class="badge bg-success">Còn sách</span>
                                     @else
                                         <span class="badge bg-danger">Hết sách</span>
@@ -157,23 +157,25 @@
 
                             <div class="col-md-3">
                                 <strong>Tổng sách:</strong><br>
-                                {{ $book->total_quantity }}
+                                <span class="total-quantity">{{ $book->total_quantity }}</span>
                             </div>
 
                             <div class="col-md-3">
                                 <strong>Còn sách:</strong><br>
-                                <span class="badge bg-success">
-                            {{ $book->available_quantity }}
-                        </span>
+                                <span class="badge bg-success available-quantity">
+                                    {{ $book->available_quantity }}
+                                </span>
                             </div>
 
                             <div class="col-md-3">
                                 <strong>Trạng thái:</strong><br>
-                                @if($book->status == 'Còn sách')
-                                    <span class="badge bg-success">Còn sách</span>
-                                @else
-                                    <span class="badge bg-danger">Hết sách</span>
-                                @endif
+                                <div class="book-status">
+                                    @if($book->available_quantity > 0)
+                                        <span class="badge bg-success">Còn sách</span>
+                                    @else
+                                        <span class="badge bg-danger">Hết sách</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
@@ -190,31 +192,58 @@
                         <!-- Danh sách book_detail -->
                         <h5>📖 Danh sách bản sao (Book Detail)</h5>
 
+                        <form action="{{ route('book_details.store') }}" method="POST">
+                            @csrf
+
+                            <input type="hidden" name="book_id" value="{{ $book->id }}">
+
+                            <button type="submit" class="btn btn-sm btn-primary mb-2">
+                                + Thêm bản sao
+                            </button>
+                        </form>
+
                         <table class="table table-bordered">
                             <thead class="table-secondary">
                             <tr>
                                 <th>#</th>
-                                <th>Barcode</th>
-                                <th>Tên</th>
+                                <th>Mã sách</th>
+                                <th>Tên sách</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
                             </thead>
 
                             <tbody>
                             @forelse($book->bookDetails as $detail)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
+                                    <td class="text-muted">#{{ $loop->iteration }}</td>
                                     <td>{{ $detail->barcode }}</td>
                                     <td>{{ $detail->name }}</td>
 
                                     <td>
-                                        @if($detail->status == 'available')
-                                            <span class="badge bg-success">🟢 Có sẵn</span>
-                                        @elseif($detail->status == 'borrowed')
-                                            <span class="badge bg-warning text-dark">🟡 Đang mượn</span>
-                                        @else
-                                            <span class="badge bg-danger">🔴 Mất/Hỏng</span>
-                                        @endif
+                                        <select class="form-select form-select-sm update-status"
+                                                data-id="{{ $detail->id }}">
+
+                                            <option value="available" {{ $detail->status == 'available' ? 'selected' : '' }}>
+                                                🟢 Còn nguyên
+                                            </option>
+
+                                            <option value="damaged" {{ $detail->status == 'damaged' ? 'selected' : '' }}>
+                                                🔴 Hỏng
+                                            </option>
+
+                                            <option value="lost" {{ $detail->status == 'lost' ? 'selected' : '' }}>
+                                                ⚫ Mất
+                                            </option>
+
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-sm btn-danger btn-delete-detail"
+                                                data-id="{{ $detail->id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -239,6 +268,95 @@
                 </div>
             </div>
         </div>
+
     @endforeach
+
+    <script>
+        // Thêm bản ghi
+        document.querySelectorAll('.update-status').forEach(select => {
+
+            select.addEventListener('change', function () {
+
+                let id = this.dataset.id;
+                let status = this.value;
+                let modal = this.closest('.modal');
+
+                fetch(`{{ url('book-details/update-status') }}`, {
+                    method: 'POST', //
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({id, status})
+                })
+                    .then(res => res.json())
+                    .then(data => {
+
+                        if (data.success) {
+
+                            let qty = modal.querySelector('.available-quantity');
+                            if (qty) qty.innerText = data.available_quantity;
+
+                            let statusBox = modal.querySelector('.book-status');
+
+                            if (statusBox) {
+                                statusBox.innerHTML = data.available_quantity > 0
+                                    ? '<span class="badge bg-success">Còn sách</span>'
+                                    : '<span class="badge bg-danger">Hết sách</span>';
+                            }
+                        }
+                    });
+            });
+        });
+    </script>
+
+    <script>
+        // Xóa bản ghi
+        document.querySelectorAll('.btn-delete-detail').forEach(btn => {
+
+            btn.addEventListener('click', function () {
+
+                if (!confirm('Xoá bản sao này?')) return;
+
+                let id = this.dataset.id;
+                let row = this.closest('tr');
+                let modal = this.closest('.modal');
+
+                fetch(`{{ url('book-details') }}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+
+                        if (data.success) {
+
+                            // xoá dòng
+                            row.remove();
+
+                            // ập nhật CÒN SÁCH
+                            let qty = modal.querySelector('.available-quantity');
+                            if (qty) qty.innerText = data.available_quantity;
+
+                            // cập nhật TỔNG SÁCH
+                            let total = modal.querySelector('.total-quantity');
+                            if (total) total.innerText = data.total_quantity;
+
+                            // cập nhật trạng thái
+                            let statusBox = modal.querySelector('.book-status');
+
+                            if (statusBox) {
+                                statusBox.innerHTML = data.available_quantity > 0
+                                    ? '<span class="badge bg-success">Còn sách</span>'
+                                    : '<span class="badge bg-danger">Hết sách</span>';
+                            }
+                        }
+                    });
+            });
+        });
+    </script>
 
 @endsection

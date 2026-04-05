@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BookDetailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\LoanSlipController;
@@ -32,8 +33,11 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('authors', AuthorController::class);
     Route::resource('publishers', PublisherController::class);
     Route::resource('books', BookController::class);
+    Route::resource('book_details', BookDetailController::class);
     Route::resource('loan_slips', LoanSlipController::class);
     Route::resource('loan_slip_details', LoanSlipDetailController::class);
+    Route::delete('/book-details/{id}', [BookDetailController::class, 'destroyAjax']);
+    Route::post('/book-details/update-status', [BookDetailController::class, 'updateStatus']);
 });
 
 Route::get('admin/login', [AdminAuthController::class,'showLogin'])->name('admin.login');

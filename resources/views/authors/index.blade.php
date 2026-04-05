@@ -27,7 +27,7 @@
 
                         <thead class="table-dark">
                         <tr>
-                            <th style="width:5%">#</th>
+                            <th style="width:5%" class="text-center">#</th>
                             <th style="width:20%">Tên</th>
                             <th style="width:15%">Ngày sinh</th>
                             <th style="width:45%">Mô tả</th>
@@ -38,7 +38,7 @@
                         <tbody>
                         @forelse($authors as $author)
                             <tr>
-                                <td class="text-muted">#{{ $loop->iteration }}</td>
+                                <td class="text-muted text-center" >#{{ $loop->iteration }}</td>
 
                                 <td class="fw-semibold">{{ $author->name }}</td>
 

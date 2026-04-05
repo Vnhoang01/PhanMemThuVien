@@ -33,6 +33,7 @@ class BookController extends Controller
             'year_of_publication' => 'required|numeric',
             'total_quantity' => 'required|numeric',
             'available_quantity' => 'required|numeric',
+            'author_id' => 'required',
             'category_id' => 'required',
             'publisher_id' => 'required'
         ]);

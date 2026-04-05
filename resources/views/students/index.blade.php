@@ -26,7 +26,7 @@
 
                         <thead class="table-dark">
                         <tr>
-                            <th>#</th>
+                            <th class="text-center">#</th>
                             <th>Tên</th>
                             <th>Ngày sinh</th>
                             <th>Giới tính</th>

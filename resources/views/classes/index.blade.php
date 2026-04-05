@@ -25,7 +25,7 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-dark">
                     <tr>
-                        <th>#</th>
+                        <th class="text-center">#</th>
                         <th>Tên lớp</th>
                         <th>Niên khóa</th>
                         <th>Chuyên ngành</th>
@@ -36,7 +36,7 @@
                     <tbody>
                     @forelse($classes as $class)
                         <tr>
-                            <td class="text-muted">#{{ $loop->iteration }}</td>
+                            <td class="text-muted text-center">#{{ $loop->iteration }}</td>
                             <td>{{ $class->name }}</td>
                             <td>{{ $class->course_year }}</td>
                             <td>{{ $class->major->name ?? '---' }}</td>

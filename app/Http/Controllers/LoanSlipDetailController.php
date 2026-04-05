@@ -3,85 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Models\LoanSlipDetail;
+use App\Models\BookDetail;
 use Illuminate\Http\Request;
 
 class LoanSlipDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $loanSlipDetails = LoanSlipDetail::with('loanSlip','books')->get();
+        $loanSlipDetails = LoanSlipDetail::with('loanSlip','bookDetail.book')->get();
+
         return view('loanSlipDetail.index', compact('loanSlipDetails'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('loanSlipDetail.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'loan_slip_id' => 'required',
-            'book_id' => 'required',
-            'quantity' => 'required|integer'
+            'loan_slip_id' => 'required|exists:loan_slips,id',
+            'book_detail_id' => 'required|exists:book_details,id'
         ]);
 
-        LoanSlipDetail::create($request->all());
+        $detail = BookDetail::findOrFail($request->book_detail_id);
 
-        return redirect()->route('loanSlipDetail.index')
-            ->with('success','Thêm thành công');
+        // Không cho mượn nếu đã bị mượn
+        if ($detail->status != 'available') {
+            return back()->with('error','Sách này không khả dụng');
+        }
+
+        // tạo chi tiết
+        LoanSlipDetail::create([
+            'loan_slip_id' => $request->loan_slip_id,
+            'book_detail_id' => $request->book_detail_id,
+            'status' => 'borrowed'
+        ]);
+
+        // cập nhật trạng thái
+        $detail->update(['status' => 'borrowed']);
+        $detail->book->decrement('available_quantity');
+
+        return back()->with('success','Thêm thành công');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(LoanSlipDetail $loanSlipDetail)
-    {
-        return view('loanSlipDetail.show', compact('loanSlipDetail'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(LoanSlipDetail $loanSlipDetail)
-    {
-        return view('loanSlipDetail.edit', compact('loanSlipDetail'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, LoanSlipDetail $loanSlipDetail)
     {
         $request->validate([
-            'loan_slip_id' => 'required',
-            'book_id' => 'required',
-            'quantity' => 'required|integer'
+            'status' => 'required|in:borrowed,returned,lost,damaged'
         ]);
 
-        $loanSlipDetail->update($request->all());
+        $detail = $loanSlipDetail->bookDetail;
 
-        return redirect()->route('loanSlipDetail.index')
-            ->with('success','Cập nhật thành công');
+        // 🔥 Nếu trả sách
+        if ($request->status == 'returned' && $loanSlipDetail->status != 'returned') {
+
+            $detail->update(['status' => 'available']);
+            $detail->book->increment('available_quantity');
+        }
+
+        // 🔥 Nếu mất hoặc hỏng
+        if (in_array($request->status, ['lost','damaged'])) {
+            $detail->update(['status' => $request->status]);
+        }
+
+        $loanSlipDetail->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success','Cập nhật thành công');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(LoanSlipDetail $loanSlipDetail)
     {
+        $detail = $loanSlipDetail->bookDetail;
+
+        // trả lại sách nếu đang mượn
+        if ($loanSlipDetail->status == 'borrowed') {
+            $detail->update(['status' => 'available']);
+            $detail->book->increment('available_quantity');
+        }
+
         $loanSlipDetail->delete();
 
-        return redirect()->route('loanSlipDetail.index')
-            ->with('success','Xóa thành công');
+        return back()->with('success','Xóa thành công');
     }
 }

@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\BookDetail;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookDetailController extends Controller
 {
     public function index()
     {
-        $bookDetails = BookDetail::with('book')->get();
+        $bookDetails = BookDetail::with('book')
+            ->where('status', 'available') // chỉ lấy sách còn
+            ->get();
         return view('book_details.index', compact('bookDetails'));
     }
 
@@ -23,32 +26,34 @@ class BookDetailController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'barcode' => 'required|unique:book_details',
-            'name' => 'required',
             'book_id' => 'required|exists:books,id',
         ]);
 
-        $bookDetail = BookDetail::create([
-            'barcode' => $request->barcode,
-            'name' => $request->name,
-            'status' => 'available',
-            'book_id' => $request->book_id,
-        ]);
+        DB::transaction(function () use ($request, &$barcode) {
 
-        // 👉 cập nhật số lượng sách
-        $book = Book::find($request->book_id);
-        $book->increment('total_quantity');
-        $book->increment('available_quantity');
+            // Lấy book trước
+            $book = Book::findOrFail($request->book_id);
 
-        // 👉 nếu gọi từ AJAX (modal)
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'data' => $bookDetail
+            // Tạo bản sao
+            $bookDetail = BookDetail::create([
+                'name' => $book->name,
+                'status' => 'available',
+                'book_id' => $request->book_id,
             ]);
-        }
 
-        return back()->with('success', 'Thêm thành công');
+            // Tự động tạo barcode
+            $barcode = '#' . str_pad($bookDetail->id, 3, '0', STR_PAD_LEFT);
+
+            $bookDetail->update([
+                'barcode' => $barcode
+            ]);
+
+            // Cập nhập số lượng sách sau khi tạo bản sao
+            $book->increment('total_quantity');
+            $book->increment('available_quantity');
+        });
+
+        return back()->with('success', 'Thêm thành công: ' . $barcode);
     }
 
     public function edit($id)
@@ -58,39 +63,56 @@ class BookDetailController extends Controller
         return view('book_details.edit', compact('bookDetail', 'books'));
     }
 
-    public function update(Request $request, $id)
+    public function updateStatus(Request $request)
     {
-        $request->validate([
-            'barcode' => 'required|unique:book_details,barcode,' . $id,
-            'name' => 'required',
+        $detail = BookDetail::findOrFail($request->id);
+        $book = $detail->book;
+
+        DB::transaction(function () use ($request, $detail, $book) {
+
+            // 🔥 Nếu trạng thái cũ là available thì giảm
+            if ($detail->status === 'available') {
+                $book->decrement('available_quantity');
+            }
+
+            // 🔥 Nếu trạng thái mới là available thì tăng
+            if ($request->status === 'available') {
+                $book->increment('available_quantity');
+            }
+
+            // 🔥 Update status
+            $detail->update([
+                'status' => $request->status
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'available_quantity' => $book->available_quantity
         ]);
-
-        $bookDetail = BookDetail::findOrFail($id);
-
-        $bookDetail->update([
-            'barcode' => $request->barcode,
-            'name' => $request->name,
-            'status' => $request->status,
-        ]);
-
-        return back()->with('success', 'Cập nhật thành công');
     }
 
-    public function destroy($id)
+    // Xóa bản
+    public function destroyAjax($id)
     {
         $bookDetail = BookDetail::findOrFail($id);
-
-        // ❗ cập nhật lại số lượng
         $book = $bookDetail->book;
 
-        if ($bookDetail->status == 'available') {
-            $book->decrement('available_quantity');
-        }
+        DB::transaction(function () use ($bookDetail, $book) {
 
-        $book->decrement('total_quantity');
+            if ($bookDetail->status === 'available') {
+                $book->decrement('available_quantity');
+            }
 
-        $bookDetail->delete();
+            $book->decrement('total_quantity');
 
-        return back()->with('success', 'Xoá thành công');
+            $bookDetail->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'available_quantity' => $book->available_quantity,
+            'total_quantity' => $book->total_quantity
+        ]);
     }
 }

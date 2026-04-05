@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class BookDetail extends Model
 {
     protected $fillable = [
-        'book_id',
         'barcode',
+        'name',
         'status',
-        'location'
+        'book_id'
     ];
 
     public function book()

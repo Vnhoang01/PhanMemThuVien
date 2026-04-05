@@ -60,8 +60,6 @@
                             <select name="major_id"
                                     class="form-select @error('major_id') is-invalid @enderror">
 
-                                <option value="">-- Chọn chuyên ngành --</option>
-
                                 @foreach($majors as $major)
                                     <option value="{{ $major->id }}"
                                         {{ old('major_id', $class->major_id) == $major->id ? 'selected' : '' }}>

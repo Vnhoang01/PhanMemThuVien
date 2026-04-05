@@ -20,7 +20,7 @@
             </div>
         @endif
 
-        <!-- Search -->
+        <!-- Tìm kiếm -->
         <div class="card mb-3 shadow-sm">
             <div class="card-body">
                 <form method="GET" action="{{ route('admins.index') }}">

@@ -32,7 +32,7 @@
                         <th>Hạn trả</th>
                         <th>Ngày trả</th>
                         <th>Trạng thái</th>
-                        <th width="150">Hành động</th>
+                        <th>Hành động</th>
                     </tr>
                     </thead>
 
@@ -50,7 +50,7 @@
                             </td>
 
                             <td>
-                                {{ \Carbon\Carbon::parse($loan->due_date)->format('d/m/Y') }}
+                                {{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d/m/Y') : '---' }}
                             </td>
 
                             <td>
@@ -151,7 +151,22 @@
 
                             <div class="col-md-4">
                                 <strong>Người duyệt:</strong><br>
-                                {{ $loan->admin?->name }}
+
+                                <div class="fw-semibold">
+                                    {{ $loan->admin?->name ?? '---' }}
+                                </div>
+
+                                <small class="text-muted">
+                                    @if($loan->admin?->role == 'admin')
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-shield-lock"></i> Quản trị
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-person-badge"></i> Thủ thư
+                                        </span>
+                                    @endif
+                                </small>
                             </div>
 
                         </div>
@@ -195,8 +210,8 @@
                             <thead class="table-secondary">
                             <tr>
                                 <th>#</th>
-                                <th>Tên sách</th>
                                 <th>Barcode</th>
+                                <th>Tên sách</th>
                                 <th>Trạng thái</th>
                                 <th>Tiền phạt</th>
                             </tr>
@@ -207,12 +222,16 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
 
-                                    <td>{{ $detail->book?->name }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ $detail->bookDetail?->barcode }}
+                                        </span>
+                                    </td>
 
-                                    <td>{{ $detail->bookDetail?->barcode ?? '---' }}</td>
+                                    <td>{{ $detail->bookDetail?->book?->name }}</td>
 
                                     <td>
-                                        @if($detail->status == 'borrowing')
+                                        @if($detail->status == 'borrowed')
                                             <span class="badge bg-warning text-dark">Đang mượn</span>
                                         @elseif($detail->status == 'returned')
                                             <span class="badge bg-success">Đã trả</span>
@@ -222,7 +241,7 @@
                                     </td>
 
                                     <td class="text-danger">
-                                        {{ number_format($detail->fine_amount, 0) }} ₫
+                                        {{ number_format($detail->fine_amount ?? 0, 0) }} ₫
                                     </td>
                                 </tr>
                             @empty

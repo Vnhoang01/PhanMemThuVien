@@ -36,7 +36,7 @@
                         </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody class="text-center">
                         @forelse($majors as $major)
                             <tr>
                                 <td class="text-center text-muted">

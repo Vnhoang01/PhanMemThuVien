@@ -30,7 +30,12 @@
                             <label class="form-label">Admin</label>
                             <select name="admin_id"
                                     class="form-select @error('admin_id') is-invalid @enderror" required>
-                                <option value="">-- Chọn admin --</option>
+
+                                <option value="" disabled
+                                    {{ old('admin_id') ? '' : 'selected' }}>
+                                    -- Chọn admin --
+                                </option>
+
                                 @foreach($admins as $admin)
                                     <option value="{{ $admin->id }}"
                                         {{ old('admin_id') == $admin->id ? 'selected' : '' }}>
@@ -48,7 +53,12 @@
                             <label class="form-label">Sinh viên</label>
                             <select name="student_id"
                                     class="form-select @error('student_id') is-invalid @enderror" required>
-                                <option value="">-- Chọn sinh viên --</option>
+
+                                <option value="" disabled
+                                    {{ old('student_id') ? '' : 'selected' }}>
+                                    -- Chọn sinh viên --
+                                </option>
+
                                 @foreach($students as $student)
                                     <option value="{{ $student->id }}"
                                         {{ old('student_id') == $student->id ? 'selected' : '' }}>
@@ -92,27 +102,22 @@
 
                         {{-- Books --}}
                         <div class="col-12">
-                            <label class="form-label">Chọn sách</label>
+                            <label class="form-label">Chọn bản sách</label>
 
-                            <select name="books[]"
-                                    multiple
-                                    class="form-select @error('books') is-invalid @enderror"
-                                    size="6" required>
+                            <select name="book_details[]" multiple class="form-select" id="bookSelect">
 
-                                @foreach($books as $book)
-                                    <option value="{{ $book->id }}"
-                                        {{ collect(old('books'))->contains($book->id) ? 'selected' : '' }}>
-                                        {{ $book->name }}
+                                @foreach($bookDetails as $detail)
+                                    <option value="{{ $detail->id }}"
+                                            data-book-id="{{ $detail->book_id }}">
+                                        📘 {{ $detail->book->name }} | Mã: {{ $detail->barcode }}
                                     </option>
                                 @endforeach
 
                             </select>
 
-                            @error('books')
-                            <div class="text-danger mt-1">{{ $message }}</div>
-                            @enderror
-
-                            <small class="text-muted">Giữ Ctrl để chọn nhiều sách</small>
+                            <small class="text-muted">
+                                Mỗi dòng là 1 cuốn sách cụ thể (barcode)
+                            </small>
                         </div>
 
                     </div>
@@ -134,5 +139,54 @@
         </div>
 
     </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const select = document.getElementById('bookSelect');
+
+            // 1. Click lại để bỏ chọn
+            select.addEventListener('mousedown', function (e) {
+
+                if (e.target.tagName === 'OPTION') {
+
+                    e.preventDefault();
+
+                    // toggle chọn / bỏ chọn
+                    e.target.selected = !e.target.selected;
+
+                    // trigger change để chạy logic disable
+                    select.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // 2. Disable các sách còn lại
+            select.addEventListener('change', function () {
+
+                let selectedOptions = [...this.selectedOptions];
+
+                // reset tất cả
+                [...this.options].forEach(opt => {
+                    opt.disabled = false;
+                });
+
+                // disable các option cùng book_id
+                selectedOptions.forEach(selected => {
+
+                    let bookId = selected.dataset.bookId;
+
+                    [...select.options].forEach(opt => {
+
+                        if (opt.dataset.bookId === bookId && !opt.selected) {
+                            opt.disabled = true;
+                        }
+
+                    });
+                });
+            });
+
+        });
+    </script>
 
 @endsection

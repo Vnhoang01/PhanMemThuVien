@@ -30,7 +30,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Người duyệt</label>
                             <select name="admin_id" class="form-select @error('admin_id') is-invalid @enderror">
-                                <option value="">-- Chọn admin --</option>
+                                <option value="" >-- Chọn admin --</option>
                                 @foreach($admins as $admin)
                                     <option value="{{ $admin->id }}"
                                         {{ old('admin_id', $loan->admin_id) == $admin->id ? 'selected' : '' }}>
@@ -116,22 +116,28 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Chọn sách</label>
+                            <label class="form-label">Chọn bản sách</label>
 
-                            <select name="books[]" multiple
-                                    class="form-select @error('books') is-invalid @enderror"
-                                    size="6">
+                            <select name="book_details[]" multiple
+                                    class="form-select"
+                                    size="8">
 
-                                @foreach($books as $book)
-                                    <option value="{{ $book->id }}"
-                                        {{ in_array($book->id, $loan->details->pluck('book_id')->toArray()) ? 'selected' : '' }}>
-                                        {{ $book->name }}
+                                @foreach($bookDetails as $detail)
+                                    <option value="{{ $detail->id }}"
+                                        {{ collect(old('book_details', $loan->details->pluck('book_detail_id')))
+                                            ->contains($detail->id) ? 'selected' : '' }}>
+
+                                        📘 {{ $detail->book?->name }}
+                                        | 🔖 {{ $detail->barcode }}
+
                                     </option>
                                 @endforeach
 
                             </select>
 
-                            <small class="text-muted">Giữ Ctrl để chọn nhiều sách</small>
+                            <small class="text-muted">
+                                Mỗi dòng là 1 cuốn cụ thể (barcode)
+                            </small>
                         </div>
 
                     </div>

@@ -8,7 +8,7 @@ class LoanSlipDetail extends Model
 {
     protected $fillable = [
         'loan_slip_id',
-        'book_id',
+        'book_detail_id',
         'fine_amount',
         'status',
     ];
@@ -17,8 +17,8 @@ class LoanSlipDetail extends Model
         return $this->belongsTo(LoanSlip::class);
     }
 
-    public function book()
+    public function bookDetail()
     {
-        return $this->belongsTo(Book::class);
+        return $this->belongsTo(BookDetail::class);
     }
 }
