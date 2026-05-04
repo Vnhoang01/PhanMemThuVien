@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('loan_slip_details', function (Blueprint $table) {
+        Schema::create('errors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('loan_slip_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('book_detail_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('borrowed');
-            $table->unique(['loan_slip_id', 'book_detail_id']);
+            $table->string('name'); // Ví dụ: Mất sách, Rách, Trễ hạn
+            $table->integer('fine_amount')->default(0); // tiền phạt mặc định
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('loan_slip_details');
+        Schema::dropIfExists('errors');
     }
 };

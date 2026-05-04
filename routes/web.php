@@ -6,6 +6,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BookDetailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClassesController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LoanSlipController;
 use App\Http\Controllers\LoanSlipDetailController;
 use App\Http\Controllers\MajorController;
@@ -29,15 +30,25 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('majors', MajorController::class);
     Route::resource('classes',ClassesController::class );
     Route::resource('students', StudentController::class);
+    Route::post('students/{id}/reset-password',
+        [StudentController::class, 'resetPassword']
+    )->name('students.resetPassword');
     Route::resource('categories', CategoryController::class);
     Route::resource('authors', AuthorController::class);
     Route::resource('publishers', PublisherController::class);
     Route::resource('books', BookController::class);
     Route::resource('book_details', BookDetailController::class);
     Route::resource('loan_slips', LoanSlipController::class);
+    Route::get('/loan-slips/{id}/return', [LoanSlipController::class, 'showReturn'])
+        ->name('loan_slips.return.form');
+    Route::post('/loan-slips/{id}/return', [LoanSlipController::class, 'returnAll'])
+        ->name('loan_slips.return');
     Route::resource('loan_slip_details', LoanSlipDetailController::class);
-    Route::delete('/book-details/{id}', [BookDetailController::class, 'destroyAjax']);
+    Route::delete('book-details/{id}', [BookDetailController::class, 'destroy'])
+        ->name('book_details.destroy');
     Route::post('/book-details/update-status', [BookDetailController::class, 'updateStatus']);
+    Route::get('books/{id}/details', [LoanSlipController::class, 'getBookDetails']);
+    Route::resource('errors', ErrorController::class);
 });
 
 Route::get('admin/login', [AdminAuthController::class,'showLogin'])->name('admin.login');

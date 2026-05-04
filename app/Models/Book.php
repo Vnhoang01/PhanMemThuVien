@@ -21,19 +21,27 @@ class Book extends Model
         return $this->belongsTo(Category::class , 'category_id');
     }
 
-    public function bookDetails()
+    public function details()
     {
         return $this->hasMany(BookDetail::class);
     }
 
+    public function getAvailableQuantityAttribute()
+    {
+        return $this->details()
+            ->where('status', 'available')
+            ->count();
+    }
+
     protected $fillable = [
+        'book_code',
+        'isbn',
         'name',
         'author_id',
         'category_id',
         'publisher_id',
         'year_of_publication',
         'total_quantity',
-        'available_quantity',
         'status',
         'description',
     ];

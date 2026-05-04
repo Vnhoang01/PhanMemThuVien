@@ -18,9 +18,9 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('due_date');
             $table->date('return_date')->nullable();
-            $table->integer('total_quantity')->default(0);
             $table->decimal('total_fine', 10, 2)->default(0);
-            $table->string('status')->default('Đang mượn');
+            $table->enum('status', ['borrowing', 'returned', 'overdue'])
+                ->default('borrowing');
             $table->timestamps();
         });
     }

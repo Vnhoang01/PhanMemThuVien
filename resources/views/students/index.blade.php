@@ -27,6 +27,7 @@
                         <thead class="table-dark">
                         <tr>
                             <th class="text-center">#</th>
+                            <th>Mã SV</th>
                             <th>Tên</th>
                             <th>Ngày sinh</th>
                             <th>Giới tính</th>
@@ -44,9 +45,15 @@
                             <tr>
                                 <td class="text-muted">#{{ $loop->iteration }}</td>
 
+                                <td class="fw-bold text-primary">{{ $student->student_code }}</td>
+
                                 <td class="fw-semibold">{{ $student->name }}</td>
 
-                                <td>{{ \Carbon\Carbon::parse($student->date_of_birth)->format('d/m/Y') }}</td>
+                                <td>
+                                    {{ $student->date_of_birth
+                                        ? \Carbon\Carbon::parse($student->date_of_birth)->format('d/m/Y')
+                                        : '' }}
+                                </td>
 
                                 <td>
                                     @if($student->gender == 'Male')
@@ -76,6 +83,15 @@
                                 </td>
 
                                 <td class="text-center">
+                                    <form action="{{ route('students.resetPassword',$student->id) }}"
+                                          method="POST"
+                                          style="display:inline">
+                                        @csrf
+                                        <button class="btn btn-sm btn-secondary"
+                                                onclick="return confirm('Reset mật khẩu cho sinh viên này?')">
+                                            <i class="bi bi-key"></i>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('students.edit',$student->id) }}"
                                        class="btn btn-sm btn-warning">
                                         <i class="bi bi-pencil"></i>

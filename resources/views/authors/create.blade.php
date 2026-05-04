@@ -34,14 +34,6 @@
                                    placeholder="Nhập tên tác giả">
                         </div>
 
-                        <!-- Ngày sinh -->
-                        <div class="col-md-6">
-                            <label class="form-label">Ngày sinh</label>
-                            <input type="date" name="date_of_birth"
-                                   value="{{ old('date_of_birth') }}"
-                                   class="form-control">
-                        </div>
-
                         <!-- Mô tả -->
                         <div class="col-12">
                             <label class="form-label">Mô tả</label>

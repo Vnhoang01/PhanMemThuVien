@@ -20,7 +20,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
 
-                <form action="{{ route('loan_slips.update', $loan->id) }}" method="POST">
+                <form action="{{ route('loan_slips.update', $loanSlip->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -33,7 +33,7 @@
                                 <option value="" >-- Chọn admin --</option>
                                 @foreach($admins as $admin)
                                     <option value="{{ $admin->id }}"
-                                        {{ old('admin_id', $loan->admin_id) == $admin->id ? 'selected' : '' }}>
+                                        {{ old('admin_id', $loanSlip->admin_id) == $admin->id ? 'selected' : '' }}>
                                         {{ $admin->name }}
                                         @if($admin->role == 'admin')
                                             (Quản trị)
@@ -53,7 +53,7 @@
                                 <option value="">-- Chọn sinh viên --</option>
                                 @foreach($students as $student)
                                     <option value="{{ $student->id }}"
-                                        {{ old('student_id', $loan->student_id) == $student->id ? 'selected' : '' }}>
+                                        {{ old('student_id', $loanSlip->student_id) == $student->id ? 'selected' : '' }}>
                                         {{ $student->name }}
                                     </option>
                                 @endforeach
@@ -67,7 +67,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Ngày mượn</label>
                             <input type="date" name="start_date"
-                                   value="{{ old('start_date', $loan->start_date) }}"
+                                   value="{{ old('start_date', $loanSlip->start_date) }}"
                                    class="form-control @error('start_date') is-invalid @enderror">
                             @error('start_date')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -78,7 +78,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Hạn trả</label>
                             <input type="date" name="due_date"
-                                   value="{{ old('due_date', $loan->due_date) }}"
+                                   value="{{ old('due_date', $loanSlip->due_date) }}"
                                    class="form-control @error('due_date') is-invalid @enderror">
                             @error('due_date')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -89,7 +89,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Ngày trả</label>
                             <input type="date" name="return_date"
-                                   value="{{ old('return_date', $loan->return_date) }}"
+                                   value="{{ old('return_date', $loanSlip->return_date) }}"
                                    class="form-control @error('return_date') is-invalid @enderror">
                             @error('return_date')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -100,13 +100,13 @@
                         <div class="col-md-6">
                             <label class="form-label">Trạng thái</label>
                             <select name="status" class="form-select @error('status') is-invalid @enderror">
-                                <option value="borrowed" {{ old('status', $loan->status)=='borrowed'?'selected':'' }}>
+                                <option value="borrowed" {{ old('status', $loanSlip->status)=='borrowed'?'selected':'' }}>
                                     Đang mượn
                                 </option>
-                                <option value="returned" {{ old('status', $loan->status)=='returned'?'selected':'' }}>Đã
+                                <option value="returned" {{ old('status', $loanSlip->status)=='returned'?'selected':'' }}>Đã
                                     trả
                                 </option>
-                                <option value="overdue" {{ old('status', $loan->status)=='overdue'?'selected':'' }}>Quá
+                                <option value="overdue" {{ old('status', $loanSlip->status)=='overdue'?'selected':'' }}>Quá
                                     hạn
                                 </option>
                             </select>
@@ -124,7 +124,7 @@
 
                                 @foreach($bookDetails as $detail)
                                     <option value="{{ $detail->id }}"
-                                        {{ collect(old('book_details', $loan->details->pluck('book_detail_id')))
+                                        {{ collect(old('book_details', $loanSlip->details->pluck('book_detail_id')))
                                             ->contains($detail->id) ? 'selected' : '' }}>
 
                                         📘 {{ $detail->book?->name }}

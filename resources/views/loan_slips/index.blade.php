@@ -61,7 +61,7 @@
 
                             <td>
                                 @switch($loan->status)
-                                    @case('borrowed')
+                                    @case('borrowing')
                                         <span class="badge bg-warning text-dark">Đang mượn</span>
                                         @break
                                     @case('returned')
@@ -88,6 +88,15 @@
                                    class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+
+                                {{-- NÚT TRẢ SÁCH --}}
+                                @if($loan->status == 'borrowed')
+                                    <a href="{{ route('loan_slips.return.form', $loan->id) }}"
+                                       class="btn btn-sm btn-success"
+                                       onclick="return confirm('Xác nhận trả sách?')">
+                                        📦 Trả
+                                    </a>
+                                @endif
 
                                 {{-- Xóa --}}
                                 <form action="{{ route('loan_slips.destroy', $loan->id) }}"
@@ -190,15 +199,18 @@
 
                             <div class="col-md-3">
                                 <strong>Trạng thái:</strong><br>
-                                @if($loan->status == 'borrowed')
+                                @if($loan->status == 'borrowing')
                                     <span class="badge bg-warning text-dark">Đang mượn</span>
                                 @elseif($loan->status == 'returned')
                                     <span class="badge bg-success">Đã trả</span>
-                                @else
+                                @elseif($loan->status == 'overdue')
                                     <span class="badge bg-danger">Quá hạn</span>
                                 @endif
                             </div>
 
+                            <div class="text-end fw-bold text-danger">
+                                Tổng tiền phạt: {{ number_format($loan->total_fine, 0) }} ₫
+                            </div>
                         </div>
 
                         <hr>
@@ -231,12 +243,27 @@
                                     <td>{{ $detail->bookDetail?->book?->name }}</td>
 
                                     <td>
-                                        @if($detail->status == 'borrowed')
-                                            <span class="badge bg-warning text-dark">Đang mượn</span>
-                                        @elseif($detail->status == 'returned')
-                                            <span class="badge bg-success">Đã trả</span>
+                                        @if($loan->status != 'returned')
+
+                                            <span class="badge bg-warning text-dark">
+                                                📕 Đang mượn
+                                            </span>
+
                                         @else
-                                            <span class="badge bg-danger">{{ $detail->status }}</span>
+
+                                            @if($detail->status == 'available')
+                                                <span class="badge bg-success">🟢 Nguyên vẹn</span>
+
+                                            @elseif($detail->status == 'damaged')
+                                                <span class="badge bg-danger">🔴 Hỏng</span>
+
+                                            @elseif($detail->status == 'lost')
+                                                <span class="badge bg-dark text-white">⚫ Mất</span>
+
+                                            @else
+                                                <span class="badge bg-secondary">---</span>
+                                            @endif
+
                                         @endif
                                     </td>
 

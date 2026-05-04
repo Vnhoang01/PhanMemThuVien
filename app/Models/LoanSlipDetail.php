@@ -12,7 +12,7 @@ class LoanSlipDetail extends Model
         'fine_amount',
         'status',
     ];
-    public function loanslip()
+    public function loanSlip()
     {
         return $this->belongsTo(LoanSlip::class);
     }
@@ -20,5 +20,12 @@ class LoanSlipDetail extends Model
     public function bookDetail()
     {
         return $this->belongsTo(BookDetail::class);
+    }
+
+    public function errors()
+    {
+        return $this->belongsToMany(Error::class, 'loan_slip_detail_error')
+            ->withPivot('fine_amount')
+            ->withTimestamps();
     }
 }

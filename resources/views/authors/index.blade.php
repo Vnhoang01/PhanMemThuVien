@@ -28,9 +28,8 @@
                         <thead class="table-dark">
                         <tr>
                             <th style="width:5%" class="text-center">#</th>
-                            <th style="width:20%">Tên</th>
-                            <th style="width:15%">Ngày sinh</th>
-                            <th style="width:45%">Mô tả</th>
+                            <th style="width:35%">Tên</th>
+                            <th style="width:30%">Mô tả</th>
                             <th style="width:15%" class="text-center">Hành động</th>
                         </tr>
                         </thead>
@@ -41,8 +40,6 @@
                                 <td class="text-muted text-center" >#{{ $loop->iteration }}</td>
 
                                 <td class="fw-semibold">{{ $author->name }}</td>
-
-                                <td>{{ \Carbon\Carbon::parse($author->date_of_birth)->format('d/m/Y') }}</td>
 
                                 <td>{{ $author->description }}</td>
 

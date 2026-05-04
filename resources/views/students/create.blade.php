@@ -25,6 +25,12 @@
 
                     <div class="row g-3">
 
+                        {{-- Mã sinh viên --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Mã sinh viên</label>
+                            <input type="text" class="form-control" value="Tự động tạo" disabled>
+                        </div>
+
                         {{-- Name --}}
                         <div class="col-md-6">
                             <label class="form-label">Tên</label>
@@ -41,6 +47,8 @@
                         <div class="col-md-6">
                             <label class="form-label">Ngày sinh</label>
                             <input type="date" name="date_of_birth"
+                                   min="2000-01-01"
+                                   max="{{ now()->subYears(18)->format('Y-m-d') }}"
                                    value="{{ old('date_of_birth') }}"
                                    class="form-control @error('date_of_birth') is-invalid @enderror">
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\BookDetail;
 use App\Models\Student;
 use App\Models\LoanSlip;
 
@@ -15,7 +16,7 @@ class DashboardController extends Controller
         $totalBorrowed = LoanSlip::count();
 
         // Tổng sách hiện còn trong thư viện
-        $availableBooks = Book::sum('available_quantity');
+        $availableBooks = BookDetail::where('status', 'available')->count();
 
         return view('dashboard', compact(
             'totalBooks',

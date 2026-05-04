@@ -43,31 +43,34 @@ class LoanSlipDetailController extends Controller
         return back()->with('success','Thêm thành công');
     }
 
-    public function update(Request $request, LoanSlipDetail $loanSlipDetail)
+    public function updateStatus(Request $request)
     {
         $request->validate([
-            'status' => 'required|in:borrowed,returned,lost,damaged'
+            'id' => 'required|exists:book_details,id',
+            'status' => 'required|in:available,damaged,lost'
         ]);
 
-        $detail = $loanSlipDetail->bookDetail;
+        $bookDetail = BookDetail::findOrFail($request->id);
 
-        // 🔥 Nếu trả sách
-        if ($request->status == 'returned' && $loanSlipDetail->status != 'returned') {
+        // Cập nhật status bản sao
+        $bookDetail->status = $request->status;
+        $bookDetail->save();
 
-            $detail->update(['status' => 'available']);
-            $detail->book->increment('available_quantity');
-        }
+        // 🔥 Đồng bộ tất cả LoanSlipDetail đang mượn bản này
+        LoanSlipDetail::where('book_detail_id', $bookDetail->id)
+            ->where('status', 'borrowed')
+            ->update(['status' => $request->status]);
 
-        // 🔥 Nếu mất hoặc hỏng
-        if (in_array($request->status, ['lost','damaged'])) {
-            $detail->update(['status' => $request->status]);
-        }
+        // Cập nhật số lượng còn sách
+        $book = $bookDetail->book;
+        $availableQuantity = $book->bookDetails()->where('status', 'available')->count();
+        $totalQuantity = $book->bookDetails()->count();
 
-        $loanSlipDetail->update([
-            'status' => $request->status
+        return response()->json([
+            'success' => true,
+            'available_quantity' => $availableQuantity,
+            'total_quantity' => $totalQuantity
         ]);
-
-        return back()->with('success','Cập nhật thành công');
     }
 
     public function destroy(LoanSlipDetail $loanSlipDetail)

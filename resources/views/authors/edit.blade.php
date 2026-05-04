@@ -34,14 +34,6 @@
                                    class="form-control">
                         </div>
 
-                        <!-- Ngày sinh -->
-                        <div class="col-md-6">
-                            <label class="form-label">Ngày sinh</label>
-                            <input type="date" name="date_of_birth"
-                                   value="{{ old('date_of_birth', \Carbon\Carbon::parse($author->date_of_birth)->format('Y-m-d')) }}"
-                                   class="form-control">
-                        </div>
-
                         <!-- Mô tả -->
                         <div class="col-12">
                             <label class="form-label">Mô tả</label>

@@ -7,6 +7,11 @@
         <h2 class="fw-bold mb-4">📄 Thêm phiếu mượn</h2>
 
         {{-- Errors --}}
+        @if(session('error'))
+            <div class="alert alert-danger shadow-sm">
+                ❌ {{ session('error') }}
+            </div>
+        @endif
         @if ($errors->any())
             <div class="alert alert-danger shadow-sm">
                 <ul class="mb-0">
@@ -25,100 +30,94 @@
 
                     <div class="row g-3">
 
-                        {{-- Admin --}}
+                        {{-- Người duyệt (auto login) --}}
                         <div class="col-md-6">
-                            <label class="form-label">Admin</label>
-                            <select name="admin_id"
-                                    class="form-select @error('admin_id') is-invalid @enderror" required>
-
-                                <option value="" disabled
-                                    {{ old('admin_id') ? '' : 'selected' }}>
-                                    -- Chọn admin --
-                                </option>
-
-                                @foreach($admins as $admin)
-                                    <option value="{{ $admin->id }}"
-                                        {{ old('admin_id') == $admin->id ? 'selected' : '' }}>
-                                        {{ $admin->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('admin_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label">Người duyệt</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ auth()->user()->name }}"
+                                   disabled>
                         </div>
 
-                        {{-- Student --}}
+                        {{-- CLASS --}}
                         <div class="col-md-6">
-                            <label class="form-label">Sinh viên</label>
-                            <select name="student_id"
-                                    class="form-select @error('student_id') is-invalid @enderror" required>
-
-                                <option value="" disabled
-                                    {{ old('student_id') ? '' : 'selected' }}>
-                                    -- Chọn sinh viên --
-                                </option>
-
-                                @foreach($students as $student)
-                                    <option value="{{ $student->id }}"
-                                        {{ old('student_id') == $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}
-                                    </option>
+                            <label class="form-label">Lớp</label>
+                            <select id="classSelect" class="form-select">
+                                <option value="">-- Chọn lớp --</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
                                 @endforeach
                             </select>
-                            @error('student_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
-                        {{-- Dates --}}
+                        {{-- Ngày mượn --}}
                         <div class="col-md-6">
                             <label class="form-label">Ngày mượn</label>
                             <input type="date" name="start_date"
                                    value="{{ old('start_date', date('Y-m-d')) }}"
                                    class="form-control @error('start_date') is-invalid @enderror" required>
+
                             @error('start_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
+                        {{-- STUDENT --}}
                         <div class="col-md-6">
-                            <label class="form-label">Hạn trả</label>
-                            <input type="date" name="due_date"
-                                   value="{{ old('due_date') }}"
-                                   class="form-control @error('due_date') is-invalid @enderror">
-                            @error('due_date')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <label class="form-label">Sinh viên</label>
+                            <select name="student_id" id="studentSelect" class="form-select" required>
+                                <option value="">-- Chọn sinh viên --</option>
 
-                        {{-- Status --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Trạng thái</label>
-                            <select name="status" class="form-select">
-                                <option value="borrowed">Đang mượn</option>
-                            </select>
-                        </div>
-
-                        {{-- Books --}}
-                        <div class="col-12">
-                            <label class="form-label">Chọn bản sách</label>
-
-                            <select name="book_details[]" multiple class="form-select" id="bookSelect">
-
-                                @foreach($bookDetails as $detail)
-                                    <option value="{{ $detail->id }}"
-                                            data-book-id="{{ $detail->book_id }}">
-                                        📘 {{ $detail->book->name }} | Mã: {{ $detail->barcode }}
+                                @foreach($students as $student)
+                                    <option value="{{ $student->id }}" data-class="{{ $student->class_id }}">
+                                        {{ $student->name }} - {{ $student->student_code }}
                                     </option>
                                 @endforeach
-
                             </select>
-
-                            <small class="text-muted">
-                                Mỗi dòng là 1 cuốn sách cụ thể (barcode)
-                            </small>
                         </div>
+
+                        {{-- Chọn sách --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Chọn sách</label>
+                            <select id="bookSelect" class="form-select">
+                                <option value="" disabled selected>-- Chọn sách --</option>
+
+                                @foreach($books as $book)
+                                    <option value="{{ $book->id }}">
+                                        {{ $book->name }} -
+                                        {{ $book->book_code }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Hiển thị bản vật lý --}}
+                        <div class="col-12">
+                            <label class="form-label">Chọn bản sách</label>
+                            <div class="d-flex gap-2 align-items-end">
+                                <select id="bookDetailSelect" class="form-select"></select>
+
+                                <button type="button" class="btn btn-primary px-3" style="height: 38px;" onclick="addBook()">
+                                    Thêm
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="form-label">Danh sách sách đã chọn</label>
+
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Sách</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody id="selectedBooks"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="hiddenInputs"></div>
 
                     </div>
 
@@ -140,50 +139,164 @@
 
     </div>
 
-
+    {{-- JS --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            const select = document.getElementById('bookSelect');
+            const bookSelect = document.getElementById('bookSelect');
+            const detailSelect = document.getElementById('bookDetailSelect');
+            const tableBody = document.getElementById('selectedBooks');
+            const hiddenInputs = document.getElementById('hiddenInputs');
 
-            // 1. Click lại để bỏ chọn
-            select.addEventListener('mousedown', function (e) {
+            let selected = [];
 
-                if (e.target.tagName === 'OPTION') {
+            // =============================
+            // LOAD BOOK DETAILS
+            // =============================
+            bookSelect.addEventListener('change', function () {
 
-                    e.preventDefault();
+                let bookId = this.value;
 
-                    // toggle chọn / bỏ chọn
-                    e.target.selected = !e.target.selected;
-
-                    // trigger change để chạy logic disable
-                    select.dispatchEvent(new Event('change'));
+                if (!bookId) {
+                    detailSelect.innerHTML = '';
+                    return;
                 }
-            });
 
-            // 2. Disable các sách còn lại
-            select.addEventListener('change', function () {
+                fetch(`/books/${bookId}/details`)
+                    .then(res => res.json())
+                    .then(data => {
 
-                let selectedOptions = [...this.selectedOptions];
+                        detailSelect.innerHTML = '';
 
-                // reset tất cả
-                [...this.options].forEach(opt => {
-                    opt.disabled = false;
-                });
-
-                // disable các option cùng book_id
-                selectedOptions.forEach(selected => {
-
-                    let bookId = selected.dataset.bookId;
-
-                    [...select.options].forEach(opt => {
-
-                        if (opt.dataset.bookId === bookId && !opt.selected) {
-                            opt.disabled = true;
+                        if (data.length === 0) {
+                            detailSelect.innerHTML = `<option disabled>Không còn sách</option>`;
+                            return;
                         }
 
+                        data.forEach(item => {
+                            let option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = `${item.book.name} - 🔖 ${item.barcode}`;
+                            option.dataset.book = item.book_id;
+
+                            detailSelect.appendChild(option);
+                        });
+
                     });
+            });
+
+            // =============================
+            // ADD BOOK
+            // =============================
+            window.addBook = function () {
+
+                let selectedOption = detailSelect.options[detailSelect.selectedIndex];
+                if (!selectedOption) return;
+
+                let id = selectedOption.value;
+                let text = selectedOption.text;
+                let bookId = selectedOption.dataset.book;
+
+                // tránh trùng
+                if (selected.includes(id)) {
+                    alert('Sách đã được chọn');
+                    return;
+                }
+
+                selected.push(id);
+
+                // 🔥 ẨN các bản cùng sách
+                Array.from(detailSelect.options).forEach(opt => {
+                    if (opt.dataset.book === bookId) {
+                        opt.style.display = 'none'; // hoặc opt.disabled = true;
+                    }
                 });
+
+                // thêm vào bảng
+                let row = document.createElement('tr');
+                row.id = `row_${id}`;
+                row.dataset.book = bookId;
+
+                row.innerHTML = `
+                    <td>${text}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                // gán sự kiện xóa
+                row.querySelector('button').addEventListener('click', function () {
+                    removeBook(id);
+                });
+
+                tableBody.appendChild(row);
+
+                // hidden input
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'book_details[]';
+                input.value = id;
+                input.id = `input_${id}`;
+
+                hiddenInputs.appendChild(input);
+            }
+
+            // =============================
+            // REMOVE BOOK
+            // =============================
+            window.removeBook = function (id) {
+
+                let row = document.getElementById('row_' + id);
+                if (!row) return;
+
+                let bookId = row.dataset.book;
+
+                selected = selected.filter(i => i != id);
+
+                row.remove();
+
+                let input = document.getElementById('input_' + id);
+                if (input) input.remove();
+
+                // HIỆN lại các bản cùng sách
+                Array.from(detailSelect.options).forEach(opt => {
+                    if (opt.dataset.book === bookId) {
+                        opt.style.display = 'block'; // hoặc opt.disabled = false;
+                    }
+                });
+            }
+
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const classSelect = document.getElementById('classSelect');
+            const studentSelect = document.getElementById('studentSelect');
+
+            // Ẩn hết sinh viên ban đầu
+            Array.from(studentSelect.options).forEach(opt => {
+                if (opt.value) opt.hidden = true;
+            });
+
+            classSelect.addEventListener('change', function () {
+
+                let classId = this.value;
+
+                // reset chọn
+                studentSelect.value = "";
+
+                Array.from(studentSelect.options).forEach(opt => {
+
+                    if (!opt.value) return;
+
+                    // hiển thị đúng lớp
+                    opt.hidden = (opt.dataset.class != classId);
+
+                });
+
             });
 
         });

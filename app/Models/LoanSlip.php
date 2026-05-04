@@ -21,13 +21,19 @@ class LoanSlip extends Model
         return $this->hasMany(LoanSlipDetail::class , 'loan_slip_id');
     }
 
+    public function getTotalQuantityAttribute()
+    {
+        return $this->details()
+            ->where('status', 'available')
+            ->count();
+    }
+
     protected $fillable = [
         'admin_id',
         'student_id',
         'start_date',
         'due_date',
         'return_date',
-        'total_quantity',
         'total_fine',
         'status',
     ];

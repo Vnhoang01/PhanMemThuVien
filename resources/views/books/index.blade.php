@@ -4,6 +4,7 @@
 
     <div class="container mt-4">
 
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold">📚 Danh sách sách</h2>
 
@@ -12,7 +13,6 @@
             </a>
         </div>
 
-        <!-- Thông báo -->
         @if(session('success'))
             <div class="alert alert-success shadow-sm">
                 {{ session('success') }}
@@ -28,13 +28,15 @@
                         <thead class="table-dark">
                         <tr>
                             <th class="text-center">#</th>
+                            <th>Mã sách</th>
+                            <th>ISBN</th>
                             <th>Tên</th>
                             <th>Tác giả</th>
                             <th>Thể loại</th>
                             <th>NXB</th>
-                            <th>Năm xuất bản</th>
-                            <th>Tổng sách</th>
-                            <th>Còn sách</th>
+                            <th>Năm XB</th>
+                            <th>Tổng</th>
+                            <th>Còn</th>
                             <th>Trạng thái</th>
                             <th class="text-center">Hành động</th>
                         </tr>
@@ -45,26 +47,34 @@
                             <tr>
                                 <td class="text-muted">#{{ $loop->iteration }}</td>
 
-                                <td class="fw-semibold">{{ $book->name }}</td>
-
-                                <td>{{ $book->author?->name}}</td>
-
                                 <td>
-                                    <span class="badge bg-info text-dark px-2 py-1">
-                                        {{ $book->category?->name}}
-                                    </span>
+                                    <span class="badge bg-dark">{{ $book->book_code }}</span>
                                 </td>
 
-                                <td>{{ $book->publisher?->name}}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ $book->isbn }}</span>
+                                </td>
+
+                                <td class="fw-semibold">{{ $book->name }}</td>
+
+                                <td>{{ $book->author?->name }}</td>
+
+                                <td>
+                            <span class="badge bg-info text-dark">
+                                {{ $book->category?->name }}
+                            </span>
+                                </td>
+
+                                <td>{{ $book->publisher?->name }}</td>
 
                                 <td>{{ $book->year_of_publication }}</td>
 
                                 <td>{{ $book->total_quantity }}</td>
 
                                 <td>
-                                <span class="badge bg-success">
-                                    {{ $book->available_quantity }}
-                                </span>
+                            <span class="badge bg-success">
+                                {{ $book->available_quantity }}
+                            </span>
                                 </td>
 
                                 <td>
@@ -109,62 +119,69 @@
             </div>
         </div>
 
+
     </div>
 
-    <!-- Modal Chi tiết sách -->
+    <!-- MODAL -->
+
     @foreach($books as $book)
+
         <div class="modal fade" id="bookDetailModal{{ $book->id }}" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
 
-                    <!-- HEADER -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title">
                             📚 {{ $book->name }}
+                            <small class="text-muted">({{ $book->book_code }})</small>
                         </h5>
+
                         <button type="button" class="btn-close btn-close-white"
                                 data-bs-dismiss="modal"></button>
                     </div>
 
-                    <!-- BODY -->
                     <div class="modal-body">
 
-                        <!-- Thông tin sách -->
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <strong>ISBN:</strong><br>
+                                <span class="badge bg-secondary">{{ $book->isbn }}</span>
+                            </div>
+
+                            <div class="col-md-3">
                                 <strong>Tác giả:</strong><br>
                                 {{ $book->author?->name }}
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <strong>Thể loại:</strong><br>
                                 <span class="badge bg-info">
-                            {{ $book->category?->name }}
-                        </span>
+                        {{ $book->category?->name }}
+                    </span>
                             </div>
 
-                            <div class="col-md-4">
-                                <strong>Nhà xuất bản:</strong><br>
+                            <div class="col-md-3">
+                                <strong>NXB:</strong><br>
                                 {{ $book->publisher?->name }}
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-3">
-                                <strong>Năm xuất bản:</strong><br>
+                                <strong>Năm XB:</strong><br>
                                 {{ $book->year_of_publication }}
                             </div>
 
                             <div class="col-md-3">
-                                <strong>Tổng sách:</strong><br>
+                                <strong>Tổng:</strong><br>
                                 <span class="total-quantity">{{ $book->total_quantity }}</span>
                             </div>
 
                             <div class="col-md-3">
-                                <strong>Còn sách:</strong><br>
+                                <strong>Còn:</strong><br>
                                 <span class="badge bg-success available-quantity">
-                                    {{ $book->available_quantity }}
-                                </span>
+                        {{ $book->available_quantity }}
+                    </span>
                             </div>
 
                             <div class="col-md-3">
@@ -179,7 +196,6 @@
                             </div>
                         </div>
 
-                        <!-- Mô tả -->
                         <div class="mb-3">
                             <strong>Mô tả:</strong>
                             <p class="text-muted">
@@ -189,16 +205,14 @@
 
                         <hr>
 
-                        <!-- Danh sách book_detail -->
-                        <h5>📖 Danh sách bản sao (Book Detail)</h5>
+                        <h5>📖 Danh sách bản sao</h5>
 
                         <form action="{{ route('book_details.store') }}" method="POST">
                             @csrf
-
                             <input type="hidden" name="book_id" value="{{ $book->id }}">
 
                             <button type="submit" class="btn btn-sm btn-primary mb-2">
-                                + Thêm bản sao
+                                + Thêm bản vật lí
                             </button>
                         </form>
 
@@ -206,35 +220,26 @@
                             <thead class="table-secondary">
                             <tr>
                                 <th>#</th>
-                                <th>Mã sách</th>
-                                <th>Tên sách</th>
+                                <th>Barcode</th>
                                 <th>Trạng thái</th>
                                 <th>Hành động</th>
                             </tr>
                             </thead>
 
                             <tbody>
-                            @forelse($book->bookDetails as $detail)
+                            @forelse($book->details as $detail)
                                 <tr>
-                                    <td class="text-muted">#{{ $loop->iteration }}</td>
+                                    <td>#{{ $loop->iteration }}</td>
                                     <td>{{ $detail->barcode }}</td>
-                                    <td>{{ $detail->name }}</td>
 
                                     <td>
                                         <select class="form-select form-select-sm update-status"
                                                 data-id="{{ $detail->id }}">
 
-                                            <option value="available" {{ $detail->status == 'available' ? 'selected' : '' }}>
-                                                🟢 Còn nguyên
-                                            </option>
-
-                                            <option value="damaged" {{ $detail->status == 'damaged' ? 'selected' : '' }}>
-                                                🔴 Hỏng
-                                            </option>
-
-                                            <option value="lost" {{ $detail->status == 'lost' ? 'selected' : '' }}>
-                                                ⚫ Mất
-                                            </option>
+                                            <option value="available" {{ $detail->status == 'available' ? 'selected' : '' }}>🟢 Nguyên vẹn</option>
+                                            <option value="damaged" {{ $detail->status == 'damaged' ? 'selected' : '' }}>🔴 Hỏng</option>
+                                            <option value="lost" {{ $detail->status == 'lost' ? 'selected' : '' }}>⚫ Mất</option>
+                                            <option value="borrowed" {{ $detail->status == 'borrowed' ? 'selected' : '' }}>🟡 Đang mượn</option>
 
                                         </select>
                                     </td>
@@ -258,7 +263,6 @@
 
                     </div>
 
-                    <!-- FOOTER -->
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">
                             Đóng
@@ -267,12 +271,12 @@
 
                 </div>
             </div>
-        </div>
 
+
+        </div>
     @endforeach
 
     <script>
-        // Thêm bản ghi
         document.querySelectorAll('.update-status').forEach(select => {
 
             select.addEventListener('change', function () {
@@ -281,80 +285,35 @@
                 let status = this.value;
                 let modal = this.closest('.modal');
 
-                fetch(`{{ url('book-details/update-status') }}`, {
-                    method: 'POST', //
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({id, status})
-                })
-                    .then(res => res.json())
-                    .then(data => {
+                clearTimeout(this._timeout);
 
-                        if (data.success) {
+                this._timeout = setTimeout(() => {
 
-                            let qty = modal.querySelector('.available-quantity');
-                            if (qty) qty.innerText = data.available_quantity;
+                    fetch(`{{ url('book-details') }}/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ id, status })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
 
-                            let statusBox = modal.querySelector('.book-status');
+                            if (!data.success) return alert('Lỗi');
 
-                            if (statusBox) {
-                                statusBox.innerHTML = data.available_quantity > 0
+                            modal.querySelector('.available-quantity').innerText = data.available_quantity;
+                            modal.querySelector('.total-quantity').innerText = data.total_quantity;
+
+                            modal.querySelector('.book-status').innerHTML =
+                                data.available_quantity > 0
                                     ? '<span class="badge bg-success">Còn sách</span>'
                                     : '<span class="badge bg-danger">Hết sách</span>';
-                            }
-                        }
-                    });
-            });
-        });
-    </script>
 
-    <script>
-        // Xóa bản ghi
-        document.querySelectorAll('.btn-delete-detail').forEach(btn => {
+                        });
 
-            btn.addEventListener('click', function () {
-
-                if (!confirm('Xoá bản sao này?')) return;
-
-                let id = this.dataset.id;
-                let row = this.closest('tr');
-                let modal = this.closest('.modal');
-
-                fetch(`{{ url('book-details') }}/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-
-                        if (data.success) {
-
-                            // xoá dòng
-                            row.remove();
-
-                            // ập nhật CÒN SÁCH
-                            let qty = modal.querySelector('.available-quantity');
-                            if (qty) qty.innerText = data.available_quantity;
-
-                            // cập nhật TỔNG SÁCH
-                            let total = modal.querySelector('.total-quantity');
-                            if (total) total.innerText = data.total_quantity;
-
-                            // cập nhật trạng thái
-                            let statusBox = modal.querySelector('.book-status');
-
-                            if (statusBox) {
-                                statusBox.innerHTML = data.available_quantity > 0
-                                    ? '<span class="badge bg-success">Còn sách</span>'
-                                    : '<span class="badge bg-danger">Hết sách</span>';
-                            }
-                        }
-                    });
+                }, 300);
             });
         });
     </script>

@@ -8,7 +8,6 @@ class BookDetail extends Model
 {
     protected $fillable = [
         'barcode',
-        'name',
         'status',
         'book_id'
     ];

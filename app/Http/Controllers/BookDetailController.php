@@ -6,14 +6,13 @@ use App\Models\BookDetail;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\LoanSlipDetail;
 
 class BookDetailController extends Controller
 {
     public function index()
     {
-        $bookDetails = BookDetail::with('book')
-            ->where('status', 'available') // chỉ lấy sách còn
-            ->get();
+        $bookDetails = BookDetail::with('book')->get();
         return view('book_details.index', compact('bookDetails'));
     }
 
@@ -31,30 +30,28 @@ class BookDetailController extends Controller
 
         DB::transaction(function () use ($request, &$barcode) {
 
-            // Lấy book trước
             $book = Book::findOrFail($request->book_id);
 
-            // Tạo bản sao
-            $bookDetail = BookDetail::create([
-                'name' => $book->name,
-                'status' => 'available',
-                'book_id' => $request->book_id,
+            $last = BookDetail::where('book_id', $book->id)
+                ->orderByDesc('id')
+                ->first();
+
+            $nextNumber = $last ? ((int)substr($last->barcode, -4)) + 1 : 1;
+
+            $barcode = $book->book_code . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+            BookDetail::create([
+                'book_id' => $book->id,
+                'barcode' => $barcode,
+                'status' => 'available'
             ]);
 
-            // Tự động tạo barcode
-            $barcode = '#' . str_pad($bookDetail->id, 3, '0', STR_PAD_LEFT);
-
-            $bookDetail->update([
-                'barcode' => $barcode
-            ]);
-
-            // Cập nhập số lượng sách sau khi tạo bản sao
             $book->increment('total_quantity');
-            $book->increment('available_quantity');
         });
 
         return back()->with('success', 'Thêm thành công: ' . $barcode);
     }
+
 
     public function edit($id)
     {
@@ -66,53 +63,68 @@ class BookDetailController extends Controller
     public function updateStatus(Request $request)
     {
         $detail = BookDetail::findOrFail($request->id);
+
+        if ($detail->loanSlipDetails()->where('status', 'borrowed')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sách đang được mượn'
+            ]);
+        }
+
+        $detail->update(['status' => $request->status]);
+
+        LoanSlipDetail::where('book_detail_id', $detail->id)
+            ->update([
+                'status' => $request->status,
+                'fine_amount' => match ($request->status) {
+                    'lost' => 100000,
+                    'damaged' => 50000,
+                    default => 0
+                }
+            ]);
+
         $book = $detail->book;
 
-        DB::transaction(function () use ($request, $detail, $book) {
+        $book->available_quantity = $book->bookDetails()
+            ->where('status', 'available')
+            ->count();
 
-            // 🔥 Nếu trạng thái cũ là available thì giảm
-            if ($detail->status === 'available') {
-                $book->decrement('available_quantity');
-            }
+        $book->total_quantity = $book->bookDetails()->count();
 
-            // 🔥 Nếu trạng thái mới là available thì tăng
-            if ($request->status === 'available') {
-                $book->increment('available_quantity');
-            }
+        $book->status = $book->available_quantity > 0 ? 'available' : 'out_of_stock';
 
-            // 🔥 Update status
-            $detail->update([
-                'status' => $request->status
-            ]);
-        });
+        $book->save();
 
         return response()->json([
-            'success' => true,
-            'available_quantity' => $book->available_quantity
+            'success' => true
         ]);
     }
 
     // Xóa bản
-    public function destroyAjax($id)
+    public function destroy($id)
     {
-        $bookDetail = BookDetail::findOrFail($id);
-        $book = $bookDetail->book;
+        $detail = BookDetail::findOrFail($id);
 
-        DB::transaction(function () use ($bookDetail, $book) {
+        //Không cho xoá nếu đang mượn
+        if ($detail->status === 'borrowed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sách đang được mượn, không thể xoá!'
+            ]);
+        }
 
-            if ($bookDetail->status === 'available') {
-                $book->decrement('available_quantity');
-            }
+        $book = $detail->book;
 
-            $book->decrement('total_quantity');
+        $detail->delete();
 
-            $bookDetail->delete();
-        });
+        //Chỉ giảm tổng sách
+        $book->decrement('total_quantity');
 
         return response()->json([
             'success' => true,
-            'available_quantity' => $book->available_quantity,
-            'total_quantity' => $book->total_quantity
+            'message' => 'Xoá thành công!',
+            'total_quantity' => $book->total_quantity,
+            'available_quantity' => $book->available_quantity
         ]);
     }
 }
