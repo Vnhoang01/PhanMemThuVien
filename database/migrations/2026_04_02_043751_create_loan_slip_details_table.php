@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('loan_slip_id')->constrained()->cascadeOnDelete();
             $table->foreignId('book_detail_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('borrowed');
+            $table->enum('status', [
+                'borrowing',
+                'returned',
+                'problem'
+            ])->default('borrowing');
             $table->unique(['loan_slip_id', 'book_detail_id']);
             $table->timestamps();
         });

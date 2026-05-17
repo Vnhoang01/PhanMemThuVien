@@ -19,6 +19,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="alert alert-danger shadow-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-body p-0">
 
@@ -61,17 +67,31 @@
 
                             <td>
                                 @switch($loan->status)
+
+                                    @case('pending')
+                                        <span class="badge bg-info">
+                                            ⏳ Đang duyệt
+                                        </span>
+                                        @break
+
                                     @case('borrowing')
-                                        <span class="badge bg-warning text-dark">Đang mượn</span>
+                                        <span class="badge bg-warning text-dark">
+                                            Đang mượn
+                                        </span>
                                         @break
+
                                     @case('returned')
-                                        <span class="badge bg-success">Đã trả</span>
+                                        <span class="badge bg-success">
+                                            Đã trả
+                                        </span>
                                         @break
+
                                     @case('overdue')
-                                        <span class="badge bg-danger">Quá hạn</span>
+                                        <span class="badge bg-danger">
+                                            Quá hạn
+                                        </span>
                                         @break
-                                    @default
-                                        <span class="badge bg-secondary">{{ $loan->status }}</span>
+
                                 @endswitch
                             </td>
 
@@ -89,8 +109,23 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
 
-                                {{-- NÚT TRẢ SÁCH --}}
-                                @if($loan->status == 'borrowed')
+                                {{-- DUYỆT --}}
+                                @if($loan->status == 'pending')
+                                    <form action="{{ route('loan_slips.approve', $loan->id) }}"
+                                          method="POST"
+                                          class="d-inline">
+                                        @csrf
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="return confirm('Duyệt phiếu mượn này?')">
+
+                                            ✔ Duyệt
+                                        </button>
+                                    </form>
+                                @endif
+
+                                {{-- TRẢ SÁCH --}}
+                                @if($loan->status == 'borrowing')
+
                                     <a href="{{ route('loan_slips.return.form', $loan->id) }}"
                                        class="btn btn-sm btn-success"
                                        onclick="return confirm('Xác nhận trả sách?')">
@@ -168,12 +203,12 @@
                                 <small class="text-muted">
                                     @if($loan->admin?->role == 'admin')
                                         <span class="badge bg-danger">
-                                            <i class="bi bi-shield-lock"></i> Quản trị
-                                        </span>
+                                                <i class="bi bi-shield-lock"></i> Quản trị
+                                            </span>
                                     @else
                                         <span class="badge bg-success">
-                                            <i class="bi bi-person-badge"></i> Thủ thư
-                                        </span>
+                                                <i class="bi bi-person-badge"></i> Thủ thư
+                                            </span>
                                     @endif
                                 </small>
                             </div>
@@ -184,27 +219,39 @@
 
                             <div class="col-md-3">
                                 <strong>Ngày mượn:</strong><br>
-                                {{ $loan->start_date }}
+                                {{ \Carbon\Carbon::parse($loan->start_date)->format('d/m/Y') }}
                             </div>
 
                             <div class="col-md-3">
                                 <strong>Hạn trả:</strong><br>
-                                {{ $loan->due_date }}
+                                {{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d/m/Y') : '---' }}
                             </div>
 
                             <div class="col-md-3">
                                 <strong>Ngày trả:</strong><br>
-                                {{ $loan->return_date ?? 'Chưa trả' }}
+                                {{ $loan->return_date
+                                    ? \Carbon\Carbon::parse($loan->return_date)->format('d/m/Y')
+                                    : 'Chưa trả' }}
                             </div>
 
                             <div class="col-md-3">
                                 <strong>Trạng thái:</strong><br>
-                                @if($loan->status == 'borrowing')
-                                    <span class="badge bg-warning text-dark">Đang mượn</span>
+                                @if($loan->status == 'pending')
+                                    <span class="badge bg-info">
+                                        ⏳ Đang duyệt
+                                    </span>
+                                @elseif($loan->status == 'borrowing')
+                                    <span class="badge bg-warning text-dark">
+                                        Đang mượn
+                                    </span>
                                 @elseif($loan->status == 'returned')
-                                    <span class="badge bg-success">Đã trả</span>
+                                    <span class="badge bg-success">
+                                        Đã trả
+                                    </span>
                                 @elseif($loan->status == 'overdue')
-                                    <span class="badge bg-danger">Quá hạn</span>
+                                    <span class="badge bg-danger">
+                                        Quá hạn
+                                    </span>
                                 @endif
                             </div>
 
@@ -235,40 +282,49 @@
                                     <td>{{ $loop->iteration }}</td>
 
                                     <td>
-                                        <span class="badge bg-secondary">
-                                            {{ $detail->bookDetail?->barcode }}
-                                        </span>
+                                            <span class="badge bg-secondary">
+                                                {{ $detail->bookDetail?->barcode }}
+                                            </span>
                                     </td>
 
                                     <td>{{ $detail->bookDetail?->book?->name }}</td>
 
                                     <td>
-                                        @if($loan->status != 'returned')
+                                        @if($loan->status == 'pending')
+                                            <span class="badge bg-info">
+                                                ⏳ Chờ duyệt
+                                            </span>
 
+                                        @elseif($loan->status == 'borrowing')
                                             <span class="badge bg-warning text-dark">
                                                 📕 Đang mượn
                                             </span>
 
-                                        @else
+                                        @elseif($loan->status == 'returned')
 
-                                            @if($detail->status == 'available')
-                                                <span class="badge bg-success">🟢 Nguyên vẹn</span>
+                                            @if($detail->errors->count() > 0)
 
-                                            @elseif($detail->status == 'damaged')
-                                                <span class="badge bg-danger">🔴 Hỏng</span>
-
-                                            @elseif($detail->status == 'lost')
-                                                <span class="badge bg-dark text-white">⚫ Mất</span>
+                                                @foreach($detail->errors as $e)
+                                                    <span class="fw-semibold text-danger">
+                                                            {{ $e->name }}
+                                                        </span><br>
+                                                @endforeach
 
                                             @else
-                                                <span class="badge bg-secondary">---</span>
+                                                <span class="fw-semibold text-success">
+                                                            🟢 Nguyên vẹn
+                                                    </span>
                                             @endif
 
                                         @endif
                                     </td>
 
+                                    @php
+                                        $fine = $detail->errors->sum('pivot.fine_amount');
+                                    @endphp
+
                                     <td class="text-danger">
-                                        {{ number_format($detail->fine_amount ?? 0, 0) }} ₫
+                                        {{ number_format($fine, 0) }} ₫
                                     </td>
                                 </tr>
                             @empty

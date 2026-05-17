@@ -20,6 +20,7 @@ class LoanSlipController extends Controller
     {
         $loanSlips = LoanSlip::with(
             'details.bookDetail.book',
+            'details.errors',
             'student.class.major',
             'admin'
         )->latest()->get();
@@ -62,6 +63,12 @@ class LoanSlipController extends Controller
             'book_details' => 'required|array',
         ]);
 
+        $bookDetails = $request->book_details;
+
+        $bookIds = BookDetail::whereIn('id', $bookDetails)
+            ->pluck('book_id')
+            ->toArray();
+
         // ✔ chỉ check đang mượn (borrowing)
         $hasBorrowing = LoanSlip::where('student_id', $request->student_id)
             ->where('status', 'borrowing')
@@ -99,7 +106,9 @@ class LoanSlipController extends Controller
                     'status' => 'borrowing'
                 ]);
 
-                $detail->update(['status' => 'borrowing']);
+                $detail->update([
+                    'status' => 'borrowed'
+                ]);
 
                 $total++;
             }
@@ -176,7 +185,9 @@ class LoanSlipController extends Controller
                     'status' => 'borrowing'
                 ]);
 
-                $detail->update(['status' => 'borrowing']);
+                $detail->update([
+                    'status' => 'borrowed'
+                ]);
             }
 
             $loanSlip->update([
@@ -190,14 +201,14 @@ class LoanSlipController extends Controller
 
     public function destroy(LoanSlip $loanSlip)
     {
+        // Không được xóa phiếu đang mượn
+        if ($loanSlip->status != 'returned') {
+
+            return redirect()->route('loan_slips.index')
+                ->with('error', 'Không được xóa phiếu đang mượn!');
+        }
+
         DB::transaction(function () use ($loanSlip) {
-
-            foreach ($loanSlip->details as $detail) {
-
-                if ($detail->status == 'borrowing') {
-                    $detail->bookDetail->update(['status' => 'available']);
-                }
-            }
 
             $loanSlip->details()->delete();
             $loanSlip->delete();
@@ -229,9 +240,12 @@ class LoanSlipController extends Controller
 
                 $errorIds = $request->errors[$detail->id] ?? [];
 
+                $hasProblem = false;
+
                 foreach ($errorIds as $errorId) {
 
                     $error = Error::find($errorId);
+
                     if (!$error) continue;
 
                     $detail->errors()->attach($errorId, [
@@ -239,15 +253,56 @@ class LoanSlipController extends Controller
                     ]);
 
                     $totalFine += $error->fine_amount;
+
+                    $hasProblem = true;
+
+                    // MẤT SÁCH
+                    if (str_contains(strtolower($error->name), 'mất')) {
+
+                        $detail->bookDetail->update([
+                            'status' => 'lost'
+                        ]);
+                    }
+
+                    // HỎNG / RÁCH
+                    elseif (
+                        str_contains(strtolower($error->name), 'rách') ||
+                        str_contains(strtolower($error->name), 'hỏng')
+                    ) {
+
+                        $detail->bookDetail->update([
+                            'status' => 'damaged'
+                        ]);
+                    }
                 }
 
-                $detail->update([
-                    'status' => 'returned'
-                ]);
+                // KHÔNG CÓ LỖI
+                if (!$hasProblem) {
 
-                $detail->bookDetail->update([
-                    'status' => 'available'
-                ]);
+                    $detail->bookDetail->update([
+                        'status' => 'available'
+                    ]);
+
+                    $detail->update([
+                        'status' => 'returned'
+                    ]);
+                }
+
+                // CÓ LỖI
+                else {
+
+                    // nếu chỉ trễ hạn mà chưa đổi status
+                    if ($detail->bookDetail->status == 'borrowed') {
+
+                        $detail->bookDetail->update([
+                            'status' => 'available'
+                        ]);
+                    }
+
+                    $detail->update([
+                        'status' => 'problem'
+                    ]);
+                }
             }
 
             $loan->update([
@@ -259,5 +314,30 @@ class LoanSlipController extends Controller
 
         return redirect()->route('loan_slips.index')
             ->with('success', 'Trả sách thành công!');
+    }
+
+    public function approve($id)
+    {
+        $loan = LoanSlip::with('details.bookDetail')->findOrFail($id);
+
+        if ($loan->status != 'pending') {
+            return back()->with('error', 'Phiếu không hợp lệ!');
+        }
+
+        // đổi trạng thái sách
+        foreach ($loan->details as $detail) {
+
+            if ($detail->bookDetail) {
+                $detail->bookDetail->update([
+                    'status' => 'borrowed'
+                ]);
+            }
+        }
+
+        $loan->update([
+            'status' => 'borrowing'
+        ]);
+
+        return back()->with('success', 'Duyệt phiếu mượn thành công!');
     }
 }

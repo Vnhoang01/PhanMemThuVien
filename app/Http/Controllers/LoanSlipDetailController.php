@@ -33,12 +33,11 @@ class LoanSlipDetailController extends Controller
         LoanSlipDetail::create([
             'loan_slip_id' => $request->loan_slip_id,
             'book_detail_id' => $request->book_detail_id,
-            'status' => 'borrowed'
+            'status' => 'borrowing'
         ]);
 
         // cập nhật trạng thái
         $detail->update(['status' => 'borrowed']);
-        $detail->book->decrement('available_quantity');
 
         return back()->with('success','Thêm thành công');
     }
@@ -58,7 +57,7 @@ class LoanSlipDetailController extends Controller
 
         // 🔥 Đồng bộ tất cả LoanSlipDetail đang mượn bản này
         LoanSlipDetail::where('book_detail_id', $bookDetail->id)
-            ->where('status', 'borrowed')
+            ->where('status', 'borrowing')
             ->update(['status' => $request->status]);
 
         // Cập nhật số lượng còn sách
@@ -78,9 +77,8 @@ class LoanSlipDetailController extends Controller
         $detail = $loanSlipDetail->bookDetail;
 
         // trả lại sách nếu đang mượn
-        if ($loanSlipDetail->status == 'borrowed') {
+        if ($loanSlipDetail->status == 'borrowing') {
             $detail->update(['status' => 'available']);
-            $detail->book->increment('available_quantity');
         }
 
         $loanSlipDetail->delete();

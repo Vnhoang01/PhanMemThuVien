@@ -207,12 +207,30 @@
 
                         <h5>📖 Danh sách bản sao</h5>
 
-                        <form action="{{ route('book_details.store') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="book_id" value="{{ $book->id }}">
+                        <form action="{{ route('book_details.store') }}"
+                              method="POST"
+                              class="d-flex gap-2 mb-3">
 
-                            <button type="submit" class="btn btn-sm btn-primary mb-2">
-                                + Thêm bản vật lí
+                            @csrf
+
+                            <input type="hidden"
+                                   name="book_id"
+                                   value="{{ $book->id }}">
+
+                            <input type="number"
+                                   name="quantity"
+                                   class="form-control form-control-sm"
+                                   min="1"
+                                   value="1"
+                                   style="width:120px"
+                                   required>
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-primary">
+
+                                <i class="bi bi-plus-circle"></i>
+                                Thêm bản vật lí
+
                             </button>
                         </form>
 

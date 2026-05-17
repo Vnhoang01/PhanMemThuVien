@@ -14,8 +14,10 @@ class Error extends Model
     // 🔗 n-n ngược lại
     public function loanSlipDetails()
     {
-        return $this->belongsToMany(LoanSlipDetail::class, 'loan_slip_detail_error')
-            ->withPivot('fine_amount')
+        return $this->belongsToMany(
+            LoanSlipDetail::class,
+            'loan_slip_detail_error'
+        )->withPivot('fine_amount')
             ->withTimestamps();
     }
 }

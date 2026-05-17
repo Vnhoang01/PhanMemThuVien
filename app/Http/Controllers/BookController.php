@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookDetail;
 use App\Models\Category;
 use App\Models\Publisher;
-use App\Models\Author;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,12 +18,26 @@ class BookController extends Controller
     public function index()
     {
         $books = Book::withCount([
+
             'details',
-            'details as available' => fn($q) => $q->where('status', 'available'),
-            'details as borrowed' => fn($q) => $q->where('status', 'borrowed'),
-            'details as damaged' => fn($q) => $q->where('status', 'damaged'),
-            'details as lost' => fn($q) => $q->where('status', 'lost'),
-        ])->get();
+
+            'details as available_count' => function ($q) {
+                $q->where('status', 'available');
+            },
+
+            'details as borrowed_count' => function ($q) {
+                $q->where('status', 'borrowed');
+            },
+
+            'details as damaged_count' => function ($q) {
+                $q->where('status', 'damaged');
+            },
+
+            'details as lost_count' => function ($q) {
+                $q->where('status', 'lost');
+            },
+
+        ])->latest()->get();
 
         return view('books.index', compact('books'));
     }
@@ -37,7 +51,11 @@ class BookController extends Controller
         $categories = Category::all();
         $publishers = Publisher::all();
 
-        return view('books.create', compact('authors', 'categories', 'publishers'));
+        return view('books.create', compact(
+            'authors',
+            'categories',
+            'publishers'
+        ));
     }
 
     // =========================
@@ -46,7 +64,9 @@ class BookController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+
+            'name' => 'required|string|max:255',
+
             'isbn' => [
                 'nullable',
                 'string',
@@ -54,31 +74,49 @@ class BookController extends Controller
                 'unique:books,isbn',
                 'regex:/^[0-9\-Xx]+$/'
             ],
-            'year_of_publication' => 'nullable|integer|min:1900|max:' . date('Y'),
+
+            'year_of_publication' =>
+                'nullable|integer|min:1900|max:' . date('Y'),
+
             'author_id' => 'required|exists:authors,id',
+
             'category_id' => 'required|exists:categories,id',
+
             'publisher_id' => 'required|exists:publishers,id',
+
+            'description' => 'nullable'
         ]);
 
         DB::transaction(function () use ($request) {
 
             $book = Book::create([
                 'book_code' => $this->generateBookCode(),
+
                 'isbn' => $this->normalizeIsbn($request->isbn),
+
                 'name' => $request->name,
-                'year_of_publication' => $request->year_of_publication,
+
+                'year_of_publication' =>
+                    $request->year_of_publication,
+
                 'author_id' => $request->author_id,
+
                 'category_id' => $request->category_id,
+
                 'publisher_id' => $request->publisher_id,
+
                 'status' => 'available',
+
                 'description' => $request->description,
             ]);
 
-            $total = $request->total_quantity ?? 0;
+            // Tạo từng cuốn sách vật lý
+            for ($i = 1; $i <= $request->total_quantity; $i++) {
 
-            for ($i = 0; $i < $total; $i++) {
-
-                $barcode = $book->book_code . '-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
+                $barcode =
+                    $book->book_code .
+                    '-' .
+                    str_pad($i, 4, '0', STR_PAD_LEFT);
 
                 BookDetail::create([
                     'book_id' => $book->id,
@@ -88,7 +126,9 @@ class BookController extends Controller
             }
         });
 
-        return redirect()->route('books.index')->with('success', 'Thêm thành công');
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Thêm sách thành công');
     }
 
     // =========================
@@ -100,7 +140,12 @@ class BookController extends Controller
         $categories = Category::all();
         $publishers = Publisher::all();
 
-        return view('books.edit', compact('book', 'authors', 'categories', 'publishers'));
+        return view('books.edit', compact(
+            'book',
+            'authors',
+            'categories',
+            'publishers'
+        ));
     }
 
     // =========================
@@ -109,7 +154,9 @@ class BookController extends Controller
     public function update(Request $request, Book $book)
     {
         $request->validate([
-            'name' => 'required',
+
+            'name' => 'required|string|max:255',
+
             'isbn' => [
                 'nullable',
                 'string',
@@ -117,24 +164,40 @@ class BookController extends Controller
                 'unique:books,isbn,' . $book->id,
                 'regex:/^[0-9\-Xx]+$/'
             ],
-            'year_of_publication' => 'nullable|integer|min:1900|max:' . date('Y'),
+
+            'year_of_publication' =>
+                'nullable|integer|min:1900|max:' . date('Y'),
+
             'author_id' => 'required|exists:authors,id',
+
             'category_id' => 'required|exists:categories,id',
+
             'publisher_id' => 'required|exists:publishers,id',
+
             'description' => 'nullable'
         ]);
 
         $book->update([
+
             'isbn' => $this->normalizeIsbn($request->isbn),
+
             'name' => $request->name,
-            'year_of_publication' => $request->year_of_publication,
+
+            'year_of_publication' =>
+                $request->year_of_publication,
+
             'author_id' => $request->author_id,
+
             'category_id' => $request->category_id,
+
             'publisher_id' => $request->publisher_id,
+
             'description' => $request->description,
         ]);
 
-        return redirect()->route('books.index')->with('success', 'Cập nhật thành công');
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Cập nhật thành công');
     }
 
     // =========================
@@ -143,11 +206,42 @@ class BookController extends Controller
     public function destroy(Book $book)
     {
         DB::transaction(function () use ($book) {
+
+            // Không cho xóa nếu đang mượn
+            $isBorrowing = $book->details()
+                ->where('status', 'borrowed')
+                ->exists();
+
+            if ($isBorrowing) {
+                throw new \Exception(
+                    'Không thể xóa sách đang được mượn'
+                );
+            }
+
             $book->details()->delete();
+
             $book->delete();
         });
 
-        return redirect()->route('books.index')->with('success', 'Xóa thành công');
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Xóa thành công');
+    }
+
+    // =========================
+    // GET AVAILABLE DETAILS
+    // =========================
+    public function details($id)
+    {
+        $details = BookDetail::with('book')
+
+            ->where('book_id', $id)
+
+            ->where('status', 'available')
+
+            ->get();
+
+        return response()->json($details);
     }
 
     // =========================
@@ -156,8 +250,14 @@ class BookController extends Controller
     private function generateBookCode()
     {
         do {
-            $code = 'BOOK-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        } while (Book::where('book_code', $code)->exists());
+
+            $code =
+                'BOOK-' .
+                str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        } while (
+            Book::where('book_code', $code)->exists()
+        );
 
         return $code;
     }
@@ -167,6 +267,8 @@ class BookController extends Controller
     // =========================
     private function normalizeIsbn($isbn)
     {
-        return $isbn ? str_replace(['-', ' '], '', $isbn) : null;
+        return $isbn
+            ? str_replace(['-', ' '], '', $isbn)
+            : null;
     }
 }

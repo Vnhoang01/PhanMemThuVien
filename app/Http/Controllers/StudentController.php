@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\Student;
 use App\Models\Classes;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:students,email',
-            'password' => 'required|min:6',
+            'password' => 'nullable|min:6',
             'class_id' => 'required',
             'date_of_birth' => [
                 'required',
@@ -52,7 +53,9 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'class_id' => $request->class_id,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password
+                ? Hash::make($request->password)
+                : Hash::make('123456'),
             'phone_number' => $request->phone_number,
             'address' => $request->address,
             'status' => $request->status ?? 'active',
@@ -111,4 +114,5 @@ class StudentController extends Controller
                 . $student->name
             );
     }
+
 }

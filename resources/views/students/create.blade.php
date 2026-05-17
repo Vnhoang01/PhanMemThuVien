@@ -115,6 +115,10 @@
                             @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+
+                            <small class="text-muted">
+                                Để trống sẽ dùng mật khẩu mặc định: 123456
+                            </small>
                         </div>
 
                         {{-- Phone --}}

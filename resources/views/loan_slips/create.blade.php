@@ -97,7 +97,8 @@
                             <div class="d-flex gap-2 align-items-end">
                                 <select id="bookDetailSelect" class="form-select"></select>
 
-                                <button type="button" class="btn btn-primary px-3" style="height: 38px;" onclick="addBook()">
+                                <button type="button" class="btn btn-primary px-3" style="height: 38px;"
+                                        onclick="addBook()">
                                     Thêm
                                 </button>
                             </div>
@@ -157,31 +158,40 @@
 
                 let bookId = this.value;
 
-                if (!bookId) {
-                    detailSelect.innerHTML = '';
-                    return;
-                }
+                detailSelect.innerHTML = '';
+                selected = []; // reset khi đổi sách
+
+                if (!bookId) return;
 
                 fetch(`/books/${bookId}/details`)
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return res.json();
+                    })
                     .then(data => {
 
-                        detailSelect.innerHTML = '';
-
-                        if (data.length === 0) {
+                        if (!data || data.length === 0) {
                             detailSelect.innerHTML = `<option disabled>Không còn sách</option>`;
                             return;
                         }
 
-                        data.forEach(item => {
+                        data.forEach((item, index) => {
+
                             let option = document.createElement('option');
+
                             option.value = item.id;
                             option.textContent = `${item.book.name} - 🔖 ${item.barcode}`;
                             option.dataset.book = item.book_id;
 
+                            if (index === 0) option.selected = true;
+
                             detailSelect.appendChild(option);
                         });
 
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        detailSelect.innerHTML = `<option disabled>Lỗi tải dữ liệu</option>`;
                     });
             });
 
@@ -190,50 +200,71 @@
             // =============================
             window.addBook = function () {
 
+                if (detailSelect.selectedIndex === -1) {
+                    alert('Không còn bản sách để chọn');
+                    return;
+                }
+
                 let selectedOption = detailSelect.options[detailSelect.selectedIndex];
-                if (!selectedOption) return;
 
                 let id = selectedOption.value;
                 let text = selectedOption.text;
                 let bookId = selectedOption.dataset.book;
 
-                // tránh trùng
                 if (selected.includes(id)) {
-                    alert('Sách đã được chọn');
+                    alert('Đã chọn bản này');
                     return;
                 }
 
                 selected.push(id);
 
-                // 🔥 ẨN các bản cùng sách
+                // =============================
+                // KHÓA TOÀN BỘ BẢN CÙNG SÁCH
+                // =============================
                 Array.from(detailSelect.options).forEach(opt => {
                     if (opt.dataset.book === bookId) {
-                        opt.style.display = 'none'; // hoặc opt.disabled = true;
+                        opt.hidden = true;
+                        opt.disabled = true;
                     }
                 });
 
-                // thêm vào bảng
+                // disable luôn sách ở dropdown chính
+                let mainOption = bookSelect.querySelector(`option[value="${bookId}"]`);
+                if (mainOption) mainOption.disabled = true;
+
+                // chọn lại option khác
+                let firstVisible = Array.from(detailSelect.options).find(opt => !opt.hidden);
+                if (firstVisible) {
+                    firstVisible.selected = true;
+                } else {
+                    detailSelect.selectedIndex = -1;
+                }
+
+                // =============================
+                // TABLE ROW
+                // =============================
                 let row = document.createElement('tr');
                 row.id = `row_${id}`;
                 row.dataset.book = bookId;
 
                 row.innerHTML = `
-                    <td>${text}</td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
+            <td>${text}</td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm">
+                    Xóa
+                </button>
+            </td>
+        `;
 
-                // gán sự kiện xóa
                 row.querySelector('button').addEventListener('click', function () {
                     removeBook(id);
                 });
 
                 tableBody.appendChild(row);
 
-                // hidden input
+                // =============================
+                // HIDDEN INPUT
+                // =============================
                 let input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'book_details[]';
@@ -260,12 +291,23 @@
                 let input = document.getElementById('input_' + id);
                 if (input) input.remove();
 
-                // HIỆN lại các bản cùng sách
+                // =============================
+                // MỞ LẠI TOÀN BỘ BẢN SÁCH
+                // =============================
                 Array.from(detailSelect.options).forEach(opt => {
                     if (opt.dataset.book === bookId) {
-                        opt.style.display = 'block'; // hoặc opt.disabled = false;
+                        opt.hidden = false;
+                        opt.disabled = false;
                     }
                 });
+
+                // mở lại dropdown chính
+                let mainOption = bookSelect.querySelector(`option[value="${bookId}"]`);
+                if (mainOption) mainOption.disabled = false;
+
+                // chọn lại option đầu
+                let firstVisible = Array.from(detailSelect.options).find(opt => !opt.hidden);
+                if (firstVisible) firstVisible.selected = true;
             }
 
         });
@@ -285,14 +327,12 @@
 
                 let classId = this.value;
 
-                // reset chọn
                 studentSelect.value = "";
 
                 Array.from(studentSelect.options).forEach(opt => {
 
                     if (!opt.value) return;
 
-                    // hiển thị đúng lớp
                     opt.hidden = (opt.dataset.class != classId);
 
                 });
