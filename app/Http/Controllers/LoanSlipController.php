@@ -318,26 +318,33 @@ class LoanSlipController extends Controller
 
     public function approve($id)
     {
-        $loan = LoanSlip::with('details.bookDetail')->findOrFail($id);
+        $loanSlip = LoanSlip::with('details.bookDetail')
+            ->findOrFail($id);
 
-        if ($loan->status != 'pending') {
-            return back()->with('error', 'Phiếu không hợp lệ!');
-        }
+        // cập nhật phiếu
+        $loanSlip->update([
 
-        // đổi trạng thái sách
-        foreach ($loan->details as $detail) {
+            'admin_id' => auth('admin')->id(),
 
-            if ($detail->bookDetail) {
-                $detail->bookDetail->update([
-                    'status' => 'borrowed'
-                ]);
-            }
-        }
-
-        $loan->update([
             'status' => 'borrowing'
+
         ]);
 
-        return back()->with('success', 'Duyệt phiếu mượn thành công!');
+        // cập nhật từng sách
+        foreach ($loanSlip->details as $detail) {
+
+            $detail->update([
+                'status' => 'borrowing'
+            ]);
+
+            $detail->bookDetail->update([
+                'status' => 'borrowed'
+            ]);
+        }
+
+        return back()->with(
+            'success',
+            'Duyệt phiếu mượn thành công!'
+        );
     }
 }

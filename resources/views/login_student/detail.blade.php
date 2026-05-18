@@ -77,25 +77,93 @@
                             {{ $book->description ?? 'Chưa có mô tả cho sách này.' }}
                         </p>
 
-                        <div class="d-flex gap-3 mt-4">
+                        <div class="mt-4">
+
+                            <h5 class="fw-bold mb-3">
+                                📚 Danh sách sách có sẵn
+                            </h5>
+
+                            @if($book->details->count() > 0)
+
+                                <div class="table-responsive">
+
+                                    <table class="table table-bordered align-middle">
+
+                                        <thead class="table-dark">
+
+                                        <tr>
+
+                                            <th>#</th>
+
+                                            <th>Mã sách</th>
+
+                                            <th>Trạng thái</th>
+
+                                            <th>Hành động</th>
+
+                                        </tr>
+
+                                        </thead>
+
+                                        <tbody>
+
+                                        @foreach($book->details as $detail)
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ $loop->iteration }}
+                                                </td>
+
+
+                                                <td>
+                                                    {{ $detail->barcode }}
+                                                </td>
+
+                                                <td>
+                                                    <span class="badge bg-success">
+                                                        Có sẵn
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+
+                                                    <a href="{{ route('student.slip.add', $detail->id) }}"
+                                                       class="btn btn-primary btn-sm">
+
+                                                        ➕ Thêm vào phiếu
+
+                                                    </a>
+
+                                                </td>
+
+                                            </tr>
+
+                                        @endforeach
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            @else
+
+                                <div class="alert alert-danger">
+
+                                    Hiện không còn sách có sẵn
+
+                                </div>
+
+                            @endif
 
                             <a href="{{ route('student.borrow') }}"
-                               class="btn btn-light rounded-3 px-4">
+                               class="btn btn-light rounded-3 px-4 mb-3">
 
                                 ← Quay lại
 
                             </a>
-
-                            <button type="button"
-                                    class="btn btn-primary rounded-3 px-4"
-                                    onclick="selectBook({{ $book->id }}, this)"
-                                {{ $book->available_quantity < 1 ? 'disabled' : '' }}>
-
-                                {{ $book->available_quantity < 1
-                                    ? 'Không Có Sẵn'
-                                    : 'Chọn Mượn' }}
-
-                            </button>
 
                         </div>
 
@@ -108,24 +176,5 @@
         </div>
 
     </div>
-
-    <style>
-
-        .book-info{
-            display:grid;
-            gap:16px;
-        }
-
-        .info-item{
-            font-size:16px;
-            color:#334155;
-        }
-
-        .info-item strong{
-            color:#0f172a;
-            margin-right:8px;
-        }
-
-    </style>
 
 @endsection

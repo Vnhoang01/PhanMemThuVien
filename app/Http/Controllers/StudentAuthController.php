@@ -79,17 +79,37 @@ class StudentAuthController extends Controller
             'return_date' => 'required|date|after:today',
         ]);
 
+        // kiểm tra sinh viên có phiếu chưa hoàn tất
+        $exists = LoanSlip::where('student_id', $student->id)
+            ->whereIn('status', ['pending', 'borrowing'])
+            ->exists();
 
-        // Create loan slip
+        if ($exists) {
+
+            return back()->with(
+                'error',
+                'Bạn đang có phiếu mượn chưa hoàn tất!'
+            );
+        }
+
+        // tạo phiếu mượn
         $loanSlip = LoanSlip::create([
+
             'student_id' => $student->id,
+
+            'admin_id' => null,
+
             'start_date' => Carbon::now(),
-            'end_date' => $request->return_date,
-            'status' => 'borrowed',
-            'total_books' => count($request->book_ids),
+
+            'due_date' => $request->return_date,
+
+            'status' => 'pending',
+
+            'total_fine' => 0
+
         ]);
 
-        // Create loan slip details and update book copies
+        // thêm chi tiết phiếu
         foreach ($request->book_ids as $bookId) {
 
             $book = Book::find($bookId);
@@ -103,19 +123,26 @@ class StudentAuthController extends Controller
             if ($detail) {
 
                 LoanSlipDetail::create([
+
                     'loan_slip_id' => $loanSlip->id,
-                    'book_id' => $bookId,
-                    'fee_amount' => 0,
+
+                    'book_detail_id' => $detail->id,
+
                     'status' => 'borrowed',
+
                 ]);
 
-                $detail->update([
-                    'status' => 'borrowed'
-                ]);
+                // KHÔNG update status ở đây
+                // chờ admin duyệt mới đổi
             }
         }
 
-        return redirect()->route('student.borrow')->with('success', 'Mượn sách thành công!');
+        return redirect()
+            ->route('student.borrow.history')
+            ->with(
+                'success',
+                'Đăng ký mượn sách thành công, vui lòng chờ admin duyệt!'
+            );
     }
 
     public function showProfile()
@@ -239,9 +266,51 @@ class StudentAuthController extends Controller
 
     public function detail($id)
     {
-        $book = Book::with(['author', 'category', 'details'])
+        $book = Book::with([
+
+            'author',
+
+            'category',
+
+            'publisher',
+
+            'details' => function ($query) {
+
+                $query->where('status', 'available');
+
+            }
+
+        ])
+            ->withCount([
+
+                'details as available_quantity' => function ($query) {
+
+                    $query->where('status', 'available');
+
+                }
+
+            ])
             ->findOrFail($id);
 
-        return view('login_student.detail', compact('book'));
+        return view(
+            'login_student.detail',
+            compact('book')
+        );
+    }
+
+    public function borrowHistory()
+    {
+        $student = Auth::guard('student')->user();
+
+        $loanSlips = LoanSlip::with([
+            'details.bookDetail.book',
+            'details.errors',
+            'admin'
+        ])
+            ->where('student_id', $student->id)
+            ->latest()
+            ->get();
+
+        return view('login_student.history', compact('loanSlips'));
     }
 }

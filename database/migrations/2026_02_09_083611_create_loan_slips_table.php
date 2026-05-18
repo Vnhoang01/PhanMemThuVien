@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('loan_slips', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('admin_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('admin_id')->constrained()->cascadeOnDelete()->nullable();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->date('start_date');
             $table->date('due_date');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StudentSlipController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthorController;
@@ -131,5 +132,28 @@ Route::middleware('auth:student')->group(function () {
         [StudentAuthController::class, 'borrow']
     )->name('student.borrow.submit');
 
+    Route::get('/student/borrow-history',
+        [StudentAuthController::class, 'borrowHistory'])
+        ->name('student.borrow.history');
+
+    Route::get('/student/slip',
+        [StudentSlipController::class, 'index'])
+        ->name('student.slip');
+
+    Route::get('/student/slip/add/{id}',
+        [StudentSlipController::class, 'add'])
+        ->name('student.slip.add');
+
+    Route::get('/student/slip/remove/{id}',
+        [StudentSlipController::class, 'remove'])
+        ->name('student.slip.remove');
+
+    Route::get('/student/slip/clear',
+        [StudentSlipController::class, 'clear'])
+        ->name('student.slip.clear');
+
+    Route::post('/student/slip/submit',
+        [StudentSlipController::class, 'submit'])
+        ->name('student.slip.submit');
 });
 

@@ -340,6 +340,11 @@
             background:#f0fdf4;
         }
 
+        .active-menu{
+            background:rgba(255,255,255,0.12);
+            color:white !important;
+        }
+
         /* =========================
             FOOTER
         ========================= */
@@ -398,6 +403,21 @@
             }
         }
 
+        .book-info{
+            display:grid;
+            gap:16px;
+        }
+
+        .info-item{
+            font-size:16px;
+            color:#334155;
+        }
+
+        .info-item strong{
+            color:#0f172a;
+            margin-right:8px;
+        }
+
     </style>
 
 </head>
@@ -409,8 +429,16 @@
 
     <h5>📚 Nerd</h5>
 
-    <a href="{{ route('student.borrow') }}">
-        Trang chủ
+    <a href="{{ route('student.borrow') }}"
+       class="{{ request()->routeIs('student.borrow') ? 'active-menu' : '' }}">
+        🏠 Trang chủ
+    </a>
+
+    <a href="{{ route('student.slip') }}"
+       class="{{ request()->routeIs('student.slip') ? 'active-menu' : '' }}">
+
+        📄 Phiếu mượn
+
     </a>
 
     <form id="student-logout-form"
@@ -477,6 +505,17 @@
                        href="{{ route('login_student.profile') }}">
 
                         👤 Thông tin cá nhân
+
+                    </a>
+
+                </li>
+
+                <li>
+
+                    <a class="dropdown-item"
+                       href="{{ route('student.borrow.history') }}">
+
+                        📚 Lịch sử mượn
 
                     </a>
 
