@@ -146,6 +146,8 @@
         .main-wrapper{
             margin-left:260px;
             min-height:100vh;
+
+            padding-top:85px;
         }
 
         /* =========================
@@ -153,16 +155,23 @@
         ========================= */
 
         .student-header{
-            background:linear-gradient(90deg,#2563eb,#3b82f6);
-            color:white;
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
 
-            padding:20px 35px;
+            z-index: 999;
 
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
+            background: linear-gradient(90deg,#2563eb,#3b82f6);
+            color: white;
 
-            box-shadow:0 4px 12px rgba(0,0,0,0.08);
+            padding: 20px 35px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .student-header h4{
@@ -380,11 +389,28 @@
             }
 
             .student-header{
-                padding:18px 20px;
+                position: fixed;
+                top: 0;
+                left: 260px;
+                right: 0;
+
+                z-index: 999;
+
+                background: linear-gradient(90deg,#2563eb,#3b82f6);
+                color: white;
+
+                padding: 20px 35px;
+
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             }
 
             .student-main{
-                padding:20px;
+                padding: 30px;
+                margin-top: 90px;
             }
         }
 
@@ -417,6 +443,48 @@
             color:#0f172a;
             margin-right:8px;
         }
+
+        /* =========================
+         BOOK IMAGE (DETAIL + MODAL)
+        ========================= */
+
+        .book-image{
+            width: 240px;
+            height: 340px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .book-image:hover{
+            transform: scale(1.03);
+        }
+
+        /* =========================
+           BACK BUTTON
+        ========================= */
+
+        .back-btn{
+            background: #f1f5f9;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+
+            padding: 10px 18px;
+            border-radius: 12px;
+
+            font-weight: 600;
+
+            transition: 0.3s ease;
+            display: inline-block;
+        }
+
+        .back-btn:hover{
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
 
     </style>
 

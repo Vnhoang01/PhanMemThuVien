@@ -80,6 +80,12 @@
                                         </span>
                                         @break
 
+                                    @case('rejected')
+                                        <span class="badge bg-secondary">
+                                            ❌ Đã hủy duyệt
+                                        </span>
+                                        @break
+
                                     @case('returned')
                                         <span class="badge bg-success">
                                             Đã trả
@@ -111,16 +117,28 @@
 
                                 {{-- DUYỆT --}}
                                 @if($loan->status == 'pending')
+
+                                    <form action="{{ route('loan_slips.cancelApprove', $loan->id) }}"
+                                          method="POST"
+                                          class="d-inline">
+                                        @csrf
+
+                                        <button class="btn btn-sm btn-secondary"
+                                                onclick="return confirm('Hủy duyệt phiếu này?')">
+                                            ❌ Hủy duyệt
+                                        </button>
+                                    </form>
+
                                     <form action="{{ route('loan_slips.approve', $loan->id) }}"
                                           method="POST"
                                           class="d-inline">
                                         @csrf
                                         <button class="btn btn-sm btn-primary"
                                                 onclick="return confirm('Duyệt phiếu mượn này?')">
-
                                             ✔ Duyệt
                                         </button>
                                     </form>
+
                                 @endif
 
                                 {{-- TRẢ SÁCH --}}
@@ -239,6 +257,10 @@
                                 @if($loan->status == 'pending')
                                     <span class="badge bg-info">
                                         ⏳ Đang duyệt
+                                    </span>
+                                @elseif($loan->status == 'rejected')
+                                    <span class="badge bg-secondary">
+                                        ❌ Đã hủy duyệt
                                     </span>
                                 @elseif($loan->status == 'borrowing')
                                     <span class="badge bg-warning text-dark">

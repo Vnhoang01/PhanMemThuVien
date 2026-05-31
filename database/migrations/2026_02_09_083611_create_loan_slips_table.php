@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('due_date');
             $table->date('return_date')->nullable();
             $table->decimal('total_fine', 10, 2)->default(0);
-            $table->enum('status', ['pending', 'borrowing', 'returned', 'overdue'])
+            $table->enum('status', ['pending', 'rejected','borrowing', 'returned', 'overdue'])
                 ->default('pending');
             $table->timestamps();
         });

@@ -74,6 +74,11 @@
                                         ⏳ Đang duyệt
                                     </span>
 
+                                @elseif($loan->status == 'rejected')
+                                    <span class="badge bg-secondary">
+                                        ❌ Đã hủy duyệt
+                                    </span>
+
                                 @elseif($loan->status == 'borrowing')
 
                                     <span class="badge bg-warning text-dark">

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Publisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -17,7 +18,14 @@ class BookController extends Controller
     // =========================
     public function index()
     {
-        $books = Book::withCount([
+        $books = Book::with([
+
+            'author',
+            'category',
+            'publisher',
+            'details'
+
+        ])->withCount([
 
             'details',
 
@@ -84,12 +92,28 @@ class BookController extends Controller
 
             'publisher_id' => 'required|exists:publishers,id',
 
-            'description' => 'nullable'
+            'description' => 'nullable',
+
+            'image' =>
+                'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+            'total_quantity' =>
+                'required|integer|min:1'
         ]);
 
         DB::transaction(function () use ($request) {
 
+            $imagePath = null;
+
+            // Upload ảnh
+            if ($request->hasFile('image')) {
+
+                $imagePath = $request->file('image')
+                    ->store('books', 'public');
+            }
+
             $book = Book::create([
+
                 'book_code' => $this->generateBookCode(),
 
                 'isbn' => $this->normalizeIsbn($request->isbn),
@@ -108,6 +132,8 @@ class BookController extends Controller
                 'status' => 'available',
 
                 'description' => $request->description,
+
+                'image' => $imagePath,
             ]);
 
             // Tạo từng cuốn sách vật lý
@@ -119,8 +145,11 @@ class BookController extends Controller
                     str_pad($i, 4, '0', STR_PAD_LEFT);
 
                 BookDetail::create([
+
                     'book_id' => $book->id,
+
                     'barcode' => $barcode,
+
                     'status' => 'available'
                 ]);
             }
@@ -174,8 +203,27 @@ class BookController extends Controller
 
             'publisher_id' => 'required|exists:publishers,id',
 
-            'description' => 'nullable'
+            'description' => 'nullable',
+
+            'image' =>
+                'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        $imagePath = $book->image;
+
+        // Upload ảnh mới
+        if ($request->hasFile('image')) {
+
+            // Xóa ảnh cũ
+            if ($book->image) {
+
+                Storage::disk('public')
+                    ->delete($book->image);
+            }
+
+            $imagePath = $request->file('image')
+                ->store('books', 'public');
+        }
 
         $book->update([
 
@@ -193,6 +241,8 @@ class BookController extends Controller
             'publisher_id' => $request->publisher_id,
 
             'description' => $request->description,
+
+            'image' => $imagePath,
         ]);
 
         return redirect()
@@ -213,13 +263,23 @@ class BookController extends Controller
                 ->exists();
 
             if ($isBorrowing) {
+
                 throw new \Exception(
                     'Không thể xóa sách đang được mượn'
                 );
             }
 
+            // Xóa ảnh
+            if ($book->image) {
+
+                Storage::disk('public')
+                    ->delete($book->image);
+            }
+
+            // Xóa bản vật lý
             $book->details()->delete();
 
+            // Xóa sách
             $book->delete();
         });
 

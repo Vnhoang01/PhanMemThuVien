@@ -8,23 +8,28 @@
 
         <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
 
-            <div class="row g-0">
+            <div class="card-body p-4 p-lg-5">
 
-{{--                <!-- IMAGE -->--}}
-{{--                <div class="col-lg-4 bg-light p-4 text-center">--}}
+                <!-- TOP SECTION: ẢNH + INFO -->
+                <div class="row mb-4">
 
-{{--                    <img src="{{ $book->image--}}
-{{--                        ? asset('storage/' . $book->image)--}}
-{{--                        : 'https://via.placeholder.com/300x450' }}"--}}
-{{--                         class="img-fluid rounded-4 shadow-sm"--}}
-{{--                         style="max-height:450px; object-fit:cover;">--}}
+                    <!-- ẢNH -->
+                    <div class="col-md-4 text-center">
 
-{{--                </div>--}}
+                        @if($book->image)
+                            <img src="{{ asset('storage/' . $book->image) }}"
+                                 alt="{{ $book->name }}"
+                                 class="book-image">
+                        @else
+                            <img src="{{ asset('images/no-image.png') }}"
+                                 alt="No image"
+                                 class="book-image">
+                        @endif
 
-                <!-- INFO -->
-                <div class="col-lg-8">
+                    </div>
 
-                    <div class="card-body p-4 p-lg-5">
+                    <!-- INFO -->
+                    <div class="col-md-8">
 
                         <h2 class="fw-bold mb-4">
                             {{ $book->name }}
@@ -59,15 +64,18 @@
 
                             <div class="info-item">
                                 <strong>Số lượng còn:</strong>
-
                                 <span class="badge bg-success fs-6">
-                                {{ $book->available_quantity }}
-                            </span>
+                        {{ $book->available_quantity }}
+                    </span>
                             </div>
 
                         </div>
 
-                        <hr class="my-4">
+                    </div>
+
+                </div>
+
+                <hr class="my-4">
 
                         <h5 class="fw-bold mb-3">
                             Mô tả sách
@@ -159,7 +167,7 @@
                             @endif
 
                             <a href="{{ route('student.borrow') }}"
-                               class="btn btn-light rounded-3 px-4 mb-3">
+                               class="btn back-btn rounded-3 px-4 mb-3">
 
                                 ← Quay lại
 

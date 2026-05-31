@@ -30,6 +30,7 @@
                             <th class="text-center">#</th>
                             <th>Mã sách</th>
                             <th>ISBN</th>
+                            <th>Ảnh</th>
                             <th>Tên</th>
                             <th>Tác giả</th>
                             <th>Thể loại</th>
@@ -53,6 +54,18 @@
 
                                 <td>
                                     <span class="badge bg-secondary">{{ $book->isbn }}</span>
+                                </td>
+
+                                <td>
+                                    @if($book->image)
+                                        <img src="{{ asset('storage/' . $book->image) }}"
+                                             alt="{{ $book->name }}"
+                                             class="book-thumb">
+                                    @else
+                                        <img src="{{ asset('images/no-image.png') }}"
+                                             alt="No image"
+                                             class="book-thumb">
+                                    @endif
                                 </td>
 
                                 <td class="fw-semibold">{{ $book->name }}</td>
@@ -119,7 +132,6 @@
             </div>
         </div>
 
-
     </div>
 
     <!-- MODAL -->
@@ -142,66 +154,98 @@
 
                     <div class="modal-body">
 
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <strong>ISBN:</strong><br>
-                                <span class="badge bg-secondary">{{ $book->isbn }}</span>
+                        <!-- ẢNH + THÔNG TIN -->
+                        <div class="row mb-4">
+
+                            <!-- ẢNH -->
+                            <div class="col-md-3 text-center">
+
+                                @if($book->image)
+                                    <img src="{{ asset('storage/' . $book->image) }}"
+                                         alt="{{ $book->name }}"
+                                         class="img-fluid rounded shadow"
+                                         style="height:300px; width:220px; object-fit:cover;">
+                                @else
+                                    <img src="{{ asset('images/no-image.png') }}"
+                                         class="img-fluid rounded shadow"
+                                         style="height:300px; width:220px; object-fit:cover;">
+                                @endif
+
                             </div>
 
-                            <div class="col-md-3">
-                                <strong>Tác giả:</strong><br>
-                                {{ $book->author?->name }}
-                            </div>
+                            <!-- THÔNG TIN -->
+                            <div class="col-md-9">
 
-                            <div class="col-md-3">
-                                <strong>Thể loại:</strong><br>
-                                <span class="badge bg-info">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <strong>ISBN:</strong><br>
+                                        <span class="badge bg-secondary">{{ $book->isbn }}</span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <strong>Tác giả:</strong><br>
+                                        {{ $book->author?->name }}
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <strong>Thể loại:</strong><br>
+                                        <span class="badge bg-info">
                         {{ $book->category?->name }}
                     </span>
-                            </div>
+                                    </div>
 
-                            <div class="col-md-3">
-                                <strong>NXB:</strong><br>
-                                {{ $book->publisher?->name }}
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <strong>Năm XB:</strong><br>
-                                {{ $book->year_of_publication }}
-                            </div>
-
-                            <div class="col-md-3">
-                                <strong>Tổng:</strong><br>
-                                <span class="total-quantity">{{ $book->total_quantity }}</span>
-                            </div>
-
-                            <div class="col-md-3">
-                                <strong>Còn:</strong><br>
-                                <span class="badge bg-success available-quantity">
-                        {{ $book->available_quantity }}
-                    </span>
-                            </div>
-
-                            <div class="col-md-3">
-                                <strong>Trạng thái:</strong><br>
-                                <div class="book-status">
-                                    @if($book->available_quantity > 0)
-                                        <span class="badge bg-success">Còn sách</span>
-                                    @else
-                                        <span class="badge bg-danger">Hết sách</span>
-                                    @endif
+                                    <div class="col-md-3">
+                                        <strong>NXB:</strong><br>
+                                        {{ $book->publisher?->name }}
+                                    </div>
                                 </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <strong>Năm XB:</strong><br>
+                                        {{ $book->year_of_publication }}
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <strong>Tổng:</strong><br>
+                                        <span class="total-quantity">
+                                            {{ $book->total_quantity }}
+                                        </span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <strong>Còn:</strong><br>
+                                        <span class="badge bg-success available-quantity">
+                                            {{ $book->available_quantity }}
+                                        </span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <strong>Trạng thái:</strong><br>
+
+                                        <div class="book-status">
+                                            @if($book->available_quantity > 0)
+                                                <span class="badge bg-success">Còn sách</span>
+                                            @else
+                                                <span class="badge bg-danger">Hết sách</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong>Mô tả:</strong>
+
+                                    <p class="text-muted">
+                                        {{ $book->description ?? 'Không có mô tả' }}
+                                    </p>
+                                </div>
+
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <strong>Mô tả:</strong>
-                            <p class="text-muted">
-                                {{ $book->description ?? 'Không có mô tả' }}
-                            </p>
-                        </div>
+
+                        <hr>
 
                         <hr>
 
@@ -254,10 +298,21 @@
                                         <select class="form-select form-select-sm update-status"
                                                 data-id="{{ $detail->id }}">
 
-                                            <option value="available" {{ $detail->status == 'available' ? 'selected' : '' }}>🟢 Nguyên vẹn</option>
-                                            <option value="damaged" {{ $detail->status == 'damaged' ? 'selected' : '' }}>🔴 Hỏng</option>
-                                            <option value="lost" {{ $detail->status == 'lost' ? 'selected' : '' }}>⚫ Mất</option>
-                                            <option value="borrowed" {{ $detail->status == 'borrowed' ? 'selected' : '' }}>🟡 Đang mượn</option>
+                                            <option
+                                                value="available" {{ $detail->status == 'available' ? 'selected' : '' }}>
+                                                🟢 Nguyên vẹn
+                                            </option>
+                                            <option
+                                                value="damaged" {{ $detail->status == 'damaged' ? 'selected' : '' }}>🔴
+                                                Hỏng
+                                            </option>
+                                            <option value="lost" {{ $detail->status == 'lost' ? 'selected' : '' }}>⚫
+                                                Mất
+                                            </option>
+                                            <option
+                                                value="borrowed" {{ $detail->status == 'borrowed' ? 'selected' : '' }}>
+                                                🟡 Đang mượn
+                                            </option>
 
                                         </select>
                                     </td>
@@ -314,7 +369,7 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ id, status })
+                        body: JSON.stringify({id, status})
                     })
                         .then(res => res.json())
                         .then(data => {

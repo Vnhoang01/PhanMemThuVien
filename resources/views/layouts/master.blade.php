@@ -17,11 +17,19 @@
         }
 
         .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+
             width: 250px;
-            min-height: 100vh;
+            height: 100vh;
+
             background: #1e293b;
             color: white;
             padding: 20px;
+
+            overflow-y: auto;
+            z-index: 1000;
         }
 
         .sidebar a {
@@ -47,22 +55,31 @@
 
         /* Content */
         .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
         }
+
 
         /* Navbar */
         .navbar-custom {
-            background: #ffffff;
-            padding: 15px 20px;
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+
+            background: #fff;
             border-bottom: 1px solid #ddd;
+
+            padding: 15px 20px;
+            z-index: 999;
         }
 
         .main-content {
+            margin-top: 70px;
             padding: 20px;
-            flex: 1;
             background: #f1f5f9;
+            min-height: calc(100vh - 70px);
         }
 
         .sidebar-menu {
@@ -124,6 +141,31 @@
 
         option:disabled {
             color: #ccc;
+        }
+
+        .book-thumb {
+            width: 45px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+
+        .view-book {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-book-thumb {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
         }
     </style>
 </head>

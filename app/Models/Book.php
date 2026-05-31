@@ -33,6 +33,11 @@ class Book extends Model
             ->count();
     }
 
+    public function bookDetails()
+    {
+        return $this->hasMany(BookDetail::class);
+    }
+
     protected $fillable = [
         'book_code',
         'isbn',
@@ -44,5 +49,6 @@ class Book extends Model
         'total_quantity',
         'status',
         'description',
+        'image',
     ];
 }

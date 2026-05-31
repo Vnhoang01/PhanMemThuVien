@@ -57,6 +57,16 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get(
+        '/dashboard/book/{id}',
+        [DashboardController::class, 'detail']
+    );
+
+    Route::get(
+        '/dashboard/error/{id}',
+        [DashboardController::class, 'errorDetail']
+    );
+
     Route::resource('admins', AdminController::class);
     Route::resource('majors', MajorController::class);
     Route::resource('classes', ClassesController::class);
@@ -79,6 +89,10 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/loan-slips/{id}/approve',
         [LoanSlipController::class, 'approve'])
         ->name('loan_slips.approve');
+
+    Route::post('/loan-slips/{id}/cancel-approve',
+        [LoanSlipController::class, 'cancelApprove'])
+        ->name('loan_slips.cancelApprove');
 
     Route::get('/loan-slips/{id}/return', [LoanSlipController::class, 'showReturn'])
         ->name('loan_slips.return.form');

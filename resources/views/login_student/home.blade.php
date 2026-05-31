@@ -27,7 +27,23 @@
             <div class="book-list" id="bookList">
                 @foreach($books as $book)
                     <div class="book-item" data-id="{{ $book->id }}">
+
+                        <div class="text-center mb-3">
+
+                            @if($book->image)
+                                <img src="{{ asset('storage/' . $book->image) }}"
+                                     alt="{{ $book->name }}"
+                                     class="book-image">
+                            @else
+                                <img src="{{ asset('images/no-image.png') }}"
+                                     alt="No image"
+                                     class="book-image">
+                            @endif
+
+                        </div>
+
                         <h3>{{ $book->name }}</h3>
+
                         <p><strong>Tác Giả:</strong> {{ $book->author->name ?? 'Không rõ' }}</p>
                         <p><strong>Thể Loại:</strong> {{ $book->category->name ?? 'Không rõ' }}</p>
                         <p><strong>Số quyển sách có sẵn:</strong> {{ $book->available_quantity ?? 0 }}</p>

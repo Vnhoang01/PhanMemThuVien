@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('available_quantity')->default(0);
             $table->string('status')->default('Còn sách');
             $table->text('description')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

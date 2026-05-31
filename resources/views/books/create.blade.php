@@ -20,7 +20,9 @@
         <div class="card shadow-sm">
             <div class="card-body">
 
-                <form action="{{ route('books.store') }}" method="POST">
+                <form action="{{ route('books.store') }}"
+                      method="POST"
+                      enctype="multipart/form-data">
                     @csrf
 
                     {{-- ================== THÔNG TIN SÁCH ================== --}}
@@ -66,6 +68,16 @@
                                    name="year_of_publication"
                                    class="form-control"
                                    value="{{ old('year_of_publication') }}">
+                        </div>
+
+                        {{-- Ảnh --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Ảnh sách</label>
+
+                            <input type="file"
+                                   name="image"
+                                   class="form-control"
+                                   accept="image/*">
                         </div>
 
                     </div>

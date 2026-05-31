@@ -9,7 +9,9 @@
         <div class="card shadow-sm">
             <div class="card-body">
 
-                <form action="{{ route('books.update',$book->id) }}" method="POST">
+                <form action="{{ route('books.update',$book->id) }}"
+                      method="POST"
+                      enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -26,9 +28,11 @@
 
                         <div class="col-md-6">
                             <label class="form-label">ISBN</label>
-                            <input type="text" class="form-control bg-light"
-                                   value="{{ $book->isbn ?? 'Chưa có ISBN' }}"
-                                   disabled>
+                            <input type="text"
+                                   name="isbn"
+                                   class="form-control bg-light"
+                                   value="{{ old('isbn', $book->isbn) }}"
+                                   readonly>
                         </div>
 
                     </div>
@@ -100,11 +104,29 @@
                                 @endforeach
                             </select>
                         </div>
-
                     </div>
 
                     {{-- =========================
-                        ROW 5: STATISTICS
+                        ROW 5: PUBLISHER
+                    ========================= --}}
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh sách</label>
+
+                        <input type="file"
+                               name="image"
+                               class="form-control"
+                               accept="image/*">
+
+                        @if($book->image)
+                            <img src="{{ asset('storage/' . $book->image) }}"
+                                 class="mt-2 rounded shadow"
+                                 style="height:150px; width:110px; object-fit:cover;">
+                        @endif
+                    </div>
+
+                    {{-- =========================
+                        ROW 6: Image
                     ========================= --}}
                     <div class="row g-3 mt-1">
 

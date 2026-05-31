@@ -318,33 +318,56 @@ class LoanSlipController extends Controller
 
     public function approve($id)
     {
-        $loanSlip = LoanSlip::with('details.bookDetail')
-            ->findOrFail($id);
+        $loan = LoanSlip::with('details.bookDetail')->findOrFail($id);
 
-        // cập nhật phiếu
-        $loanSlip->update([
+        if ($loan->status !== 'pending') {
+            return back()->with('error', 'Phiếu không hợp lệ để duyệt!');
+        }
 
-            'admin_id' => auth('admin')->id(),
+        DB::beginTransaction();
 
-            'status' => 'borrowing'
+        foreach ($loan->details as $detail) {
 
-        ]);
+            $bookDetail = BookDetail::where('id', $detail->book_detail_id)
+                ->lockForUpdate()
+                ->first();
 
-        // cập nhật từng sách
-        foreach ($loanSlip->details as $detail) {
+            if ($bookDetail->status !== 'available') {
+                DB::rollBack();
+                return back()->with('error',
+                    'Sách mã ' . $bookDetail->barcode . ' đã được người khác mượn!');
+            }
 
-            $detail->update([
-                'status' => 'borrowing'
-            ]);
-
-            $detail->bookDetail->update([
+            // lock sách lại
+            $bookDetail->update([
                 'status' => 'borrowed'
             ]);
         }
 
-        return back()->with(
-            'success',
-            'Duyệt phiếu mượn thành công!'
-        );
+        $loan->update([
+            'status' => 'borrowing',
+            'admin_id' => auth()->id(),
+        ]);
+
+        DB::commit();
+
+        return back()->with('success', 'Duyệt phiếu thành công!');
+    }
+
+    public function cancelApprove($id)
+    {
+        $loan = LoanSlip::findOrFail($id);
+
+        // chỉ được hủy khi đang chờ duyệt
+        if ($loan->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể hủy khi phiếu đang chờ duyệt!');
+        }
+
+        $loan->update([
+            'status' => 'rejected',
+            'admin_id' => auth()->id()
+        ]);
+
+        return back()->with('success', 'Đã hủy duyệt phiếu mượn!');
     }
 }
