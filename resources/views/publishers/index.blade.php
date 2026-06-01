@@ -20,6 +20,40 @@
             </div>
         @endif
 
+        <!-- Tìm kiếm -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ route('publishers.index') }}">
+                    <div class="row g-2">
+
+                        <div class="col-md-10 position-relative">
+
+                            <input type="text"
+                                   name="keyword"
+                                   value="{{ request('keyword') }}"
+                                   placeholder="🔍 Tìm nhà xuất bản"
+                                   class="form-control pe-5">
+
+                            @if(request('keyword'))
+                                <a href="{{ route('publishers.index') }}"
+                                   class="search-clear">
+                                    &times;
+                                </a>
+                            @endif
+
+                        </div>
+
+                        <div class="col-md-2 d-grid">
+                            <button class="btn btn-dark">
+                                <i class="bi bi-search"></i> Tìm
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Card -->
         <div class="card shadow-sm">
             <div class="card-body">
@@ -97,6 +131,10 @@
                 </div>
 
             </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            {{ $publishers->links() }}
         </div>
 
     </div>

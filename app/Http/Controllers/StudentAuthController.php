@@ -51,20 +51,46 @@ class StudentAuthController extends Controller
         return redirect()->route('student.login');
     }
 
-    public function showBorrow()
+    public function showBorrow(Request $request)
     {
-        $books = Book::with([
+        $query = Book::with([
             'author',
             'category',
             'details'
         ])
             ->withCount([
-                'details as available_quantity' => function ($query) {
-                    $query->where('status', 'available');
+                'details as available_quantity' => function ($q) {
+                    $q->where('status', 'available');
                 }
             ])
-            ->having('available_quantity', '>', 0)
-            ->get();
+            ->whereHas('details', function ($q) {
+                $q->where('status', 'available');
+            });
+
+        // Tìm kiếm
+        if ($request->keyword) {
+
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+
+                $q->where('name', 'like', "%{$keyword}%")
+
+                    ->orWhereHas('author', function ($author) use ($keyword) {
+                        $author->where('name', 'like', "%{$keyword}%");
+                    })
+
+                    ->orWhereHas('category', function ($category) use ($keyword) {
+                        $category->where('name', 'like', "%{$keyword}%");
+                    });
+
+            });
+        }
+
+        $books = $query
+            ->latest()
+            ->paginate(4)
+            ->withQueryString();
 
         return view('login_student.home', compact('books'));
     }

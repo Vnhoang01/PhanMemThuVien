@@ -8,6 +8,43 @@
             📊 Tổng quan hệ thống
         </h2>
 
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <form method="GET">
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-md-3">
+
+                            <label class="form-label">
+                                Chọn tháng
+                            </label>
+
+                            <input type="month"
+                                   name="month"
+                                   class="form-control"
+                                   value="{{ $selectedMonth }}">
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <button class="btn btn-primary w-100">
+                                Lọc
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
         {{-- THỐNG KÊ TỔNG QUAN --}}
         <div class="row g-4">
 
@@ -131,7 +168,7 @@
 
                     <div class="card-header bg-primary text-white">
                         📚 Sách được mượn nhiều nhất
-                        (Tháng {{ now()->format('m/Y') }})
+                        (Tháng {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('m/Y') }})
                     </div>
 
                     <div class="card-body p-0">
@@ -228,7 +265,7 @@
 
                     <div class="card-header bg-danger text-white">
                         ⚠️ Lỗi xuất hiện nhiều nhất
-                        (Tháng {{ now()->format('m/Y') }})
+                        (Tháng {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('m/Y') }})
                     </div>
 
                     <div class="card-body p-0">
@@ -316,7 +353,7 @@
 
                 <div class="card-header bg-success text-white">
                     🏆 Sinh viên mượn nhiều nhất
-                    (Tháng {{ now()->format('m/Y') }})
+                    (Tháng {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('m/Y') }})
                 </div>
 
                 <div class="card-body p-0">

@@ -8,9 +8,23 @@ use Illuminate\Http\Request;
 class AuthorController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $authors = Author::all();
+        $query = Author::query();
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Phân trang
+        $authors = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('authors.index', compact('authors'));
     }
 

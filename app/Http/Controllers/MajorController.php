@@ -7,9 +7,23 @@ use Illuminate\Http\Request;
 
 class MajorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $majors = Major::all();
+        $query = Major::query();
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Phân trang
+        $majors = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('majors.index', compact('majors'));
     }
 

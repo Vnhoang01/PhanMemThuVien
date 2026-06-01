@@ -14,11 +14,22 @@ class DashboardController extends Controller
     public function index()
     {
         // =========================
-        // THÁNG HIỆN TẠI
+        // CHỌN THÁNG
         // =========================
-        $startOfMonth = Carbon::now()->startOfMonth();
+        $selectedMonth = request(
+            'month',
+            now()->format('Y-m')
+        );
 
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfMonth = Carbon::createFromFormat(
+            'Y-m',
+            $selectedMonth
+        )->startOfMonth();
+
+        $endOfMonth = Carbon::createFromFormat(
+            'Y-m',
+            $selectedMonth
+        )->endOfMonth();
 
         // =========================
         // THỐNG KÊ TỔNG QUAN
@@ -181,7 +192,8 @@ class DashboardController extends Controller
             'goodBooks',
             'topBooks',
             'topErrors',
-            'topStudents'
+            'topStudents',
+            'selectedMonth'
         ));
     }
 

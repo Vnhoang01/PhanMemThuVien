@@ -35,7 +35,12 @@ class AdminController extends Controller
         }
 
         // Phân trang
-        $admins = $query->orderBy('id', 'desc')->paginate(4);
+        $admins = $query
+            ->orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('admins.index', compact('admins'));
     }
 

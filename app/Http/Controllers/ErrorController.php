@@ -10,9 +10,24 @@ class ErrorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+
+    public function index(Request $request)
     {
-        $errors = Error::latest()->get();
+        $query = Error::query();
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', "%{$keyword}%");
+        }
+
+        // Phân trang
+        $errors = $query
+            ->latest()
+            ->paginate(3)
+            ->withQueryString();
+
         return view('errors.index', compact('errors'));
     }
 

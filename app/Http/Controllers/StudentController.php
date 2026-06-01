@@ -11,9 +11,32 @@ use Carbon\Carbon;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::with('class')->get();
+        $query = Student::with('class');
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+
+                $q->where('student_code', 'like', "%{$keyword}%")
+                    ->orWhere('name', 'like', "%{$keyword}%")
+                    ->orWhere('email', 'like', "%{$keyword}%")
+                    ->orWhere('phone_number', 'like', "%{$keyword}%")
+                    ->orWhereHas('class', function ($sub) use ($keyword) {
+                        $sub->where('name', 'like', "%{$keyword}%");
+                    });
+
+            });
+        }
+
+        $students = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('students.index', compact('students'));
     }
 

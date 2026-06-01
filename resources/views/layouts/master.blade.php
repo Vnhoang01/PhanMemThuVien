@@ -167,6 +167,52 @@
             border-radius: 8px;
             border: 1px solid #ddd;
         }
+
+        .pagination {
+            gap: 6px;
+        }
+
+        .pagination .page-link {
+            border-radius: 10px;
+            border: none;
+            padding: 8px 14px;
+            color: #0d6efd;
+            box-shadow: 0 2px 5px rgba(0,0,0,.08);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .pagination .page-link:hover {
+            background: #e9f2ff;
+        }
+
+        .pagination + p,
+        .small.text-muted {
+            display: none !important;
+        }
+
+        .search-clear{
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            text-decoration: none;
+            color: #6c757d;
+
+            font-size: 22px;
+            font-weight: bold;
+            line-height: 1;
+
+            z-index: 10;
+        }
+
+        .search-clear:hover{
+            color: #dc3545;
+        }
     </style>
 </head>
 

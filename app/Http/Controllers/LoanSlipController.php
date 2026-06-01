@@ -16,14 +16,63 @@ use Illuminate\Support\Facades\Auth;
 
 class LoanSlipController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $loanSlips = LoanSlip::with(
+        $query = LoanSlip::with(
             'details.bookDetail.book',
             'details.errors',
             'student.class.major',
             'admin'
-        )->latest()->get();
+        );
+
+        // Tìm kiếm
+        if ($request->keyword) {
+
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+
+                // Sinh viên
+                $q->orWhereHas('student', function ($student) use ($keyword) {
+                    $student->where('name', 'like', "%{$keyword}%")
+                        ->orWhere('student_code', 'like', "%{$keyword}%");
+                });
+
+                // Người duyệt
+                $q->orWhereHas('admin', function ($admin) use ($keyword) {
+                    $admin->where('name', 'like', "%{$keyword}%");
+                });
+                // Trạng thái
+                $statusMap = [
+                    'đang duyệt'     => 'pending',
+                    'đang mượn'      => 'borrowing',
+                    'quá hạn'        => 'overdue',
+                    'đã trả'         => 'returned',
+                    'đã hủy duyệt'   => 'rejected',
+                ];
+
+                $status = $statusMap[mb_strtolower(trim($keyword), 'UTF-8')] ?? null;
+
+                if ($status) {
+                    $q->orWhere('status', $status);
+                }
+            });
+        }
+
+        $loanSlips = $query
+            ->orderByRaw("
+        CASE status
+            WHEN 'pending' THEN 1
+            WHEN 'borrowing' THEN 2
+            WHEN 'overdue' THEN 3
+            WHEN 'returned' THEN 4
+            WHEN 'rejected' THEN 5
+            ELSE 6
+        END
+    ")
+            ->latest('created_at')
+            ->paginate(3)
+            ->withQueryString();
 
         return view('loan_slips.index', compact('loanSlips'));
     }

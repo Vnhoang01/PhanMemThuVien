@@ -8,9 +8,23 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
+        $query = Category::query();
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Phân trang
+        $categories = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('categories.index', compact('categories'));
     }
 

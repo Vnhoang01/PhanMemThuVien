@@ -16,15 +16,13 @@ class BookController extends Controller
     // =========================
     // LIST
     // =========================
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::with([
-
+        $query = Book::with([
             'author',
             'category',
             'publisher',
             'details'
-
         ])->withCount([
 
             'details',
@@ -44,8 +42,36 @@ class BookController extends Controller
             'details as lost_count' => function ($q) {
                 $q->where('status', 'lost');
             },
+        ]);
 
-        ])->latest()->get();
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('book_code', 'like', "%{$keyword}%")
+                    ->orWhere('isbn', 'like', "%{$keyword}%")
+
+                    ->orWhereHas('author', function ($sub) use ($keyword) {
+                        $sub->where('name', 'like', "%{$keyword}%");
+                    })
+
+                    ->orWhereHas('category', function ($sub) use ($keyword) {
+                        $sub->where('name', 'like', "%{$keyword}%");
+                    })
+
+                    ->orWhereHas('publisher', function ($sub) use ($keyword) {
+                        $sub->where('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        $books = $query
+            ->latest()
+            ->paginate(3)
+            ->withQueryString();
 
         return view('books.index', compact('books'));
     }
@@ -95,10 +121,7 @@ class BookController extends Controller
             'description' => 'nullable',
 
             'image' =>
-                'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-
-            'total_quantity' =>
-                'required|integer|min:1'
+                'nullable|image|mimes:jpg,jpeg,png,webp|max:2048'
         ]);
 
         DB::transaction(function () use ($request) {

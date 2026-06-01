@@ -19,6 +19,40 @@
             </div>
         @endif
 
+        <!-- Tìm kiếm -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ route('books.index') }}">
+                    <div class="row g-2">
+
+                        <div class="col-md-10 position-relative">
+
+                            <input type="text"
+                                   name="keyword"
+                                   value="{{ request('keyword') }}"
+                                   placeholder="🔍 Tìm mã sách, isbn, tên sách, ..."
+                                   class="form-control pe-5">
+
+                            @if(request('keyword'))
+                                <a href="{{ route('books.index') }}"
+                                   class="search-clear">
+                                    &times;
+                                </a>
+                            @endif
+
+                        </div>
+
+                        <div class="col-md-2 d-grid">
+                            <button class="btn btn-dark">
+                                <i class="bi bi-search"></i> Tìm
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-body">
 
@@ -31,7 +65,7 @@
                             <th>Mã sách</th>
                             <th>ISBN</th>
                             <th>Ảnh</th>
-                            <th>Tên</th>
+                            <th>Tên sách</th>
                             <th>Tác giả</th>
                             <th>Thể loại</th>
                             <th>NXB</th>
@@ -132,6 +166,10 @@
             </div>
         </div>
 
+        <div class="d-flex justify-content-center mt-3">
+            {{ $books->links() }}
+        </div>
+
     </div>
 
     <!-- MODAL -->
@@ -190,8 +228,8 @@
                                     <div class="col-md-3">
                                         <strong>Thể loại:</strong><br>
                                         <span class="badge bg-info">
-                        {{ $book->category?->name }}
-                    </span>
+                                            {{ $book->category?->name }}
+                                        </span>
                                     </div>
 
                                     <div class="col-md-3">
@@ -344,7 +382,6 @@
 
                 </div>
             </div>
-
 
         </div>
     @endforeach

@@ -485,6 +485,29 @@
             transform: translateY(-2px);
         }
 
+        /* =========================
+           SEARCH BUTTON
+        ========================= */
+
+        .search-clear{
+            position:absolute;
+            right:15px;
+            top:50%;
+            transform:translateY(-50%);
+            text-decoration:none;
+            color:#6c757d;
+            font-size:22px;
+            font-weight:bold;
+        }
+
+        .search-clear:hover{
+            color:#dc3545;
+        }
+
+        .small.text-muted{
+            display:none !important;
+        }
+
 
     </style>
 

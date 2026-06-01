@@ -20,42 +20,108 @@
             </div>
         @endif
 
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+
+                    <form method="GET" action="{{ route('student.borrow') }}">
+                        <div class="row g-2">
+
+                            <div class="col-md-10 position-relative">
+
+                                <input type="text"
+                                       name="keyword"
+                                       value="{{ request('keyword') }}"
+                                       class="form-control pe-5"
+                                       placeholder="🔍 Tìm theo tên sách, tác giả hoặc thể loại">
+
+                                @if(request('keyword'))
+                                    <a href="{{ route('student.borrow') }}"
+                                       class="search-clear">
+                                        &times;
+                                    </a>
+                                @endif
+
+                            </div>
+
+                            <div class="col-md-2 d-grid">
+                                <button class="btn btn-primary">
+                                    🔍 Tìm
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
         <form id="borrowForm" method="POST" action="{{ route('student.borrow.submit') }}">
             @csrf
 
             <h2>Sách Có Sẵn</h2>
-            <div class="book-list" id="bookList">
-                @foreach($books as $book)
-                    <div class="book-item" data-id="{{ $book->id }}">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
 
-                        <div class="text-center mb-3">
+                @foreach($books as $book)
+
+                    <div class="col">
+
+                        <div class="card h-100 shadow-sm border-0">
 
                             @if($book->image)
                                 <img src="{{ asset('storage/' . $book->image) }}"
-                                     alt="{{ $book->name }}"
-                                     class="book-image">
+                                     class="card-img-top bg-light"
+                                     style="height:250px; object-fit:contain;"
+                                     alt="{{ $book->name }}">
                             @else
-                                <img src="{{ asset('images/no-image.png') }}"
-                                     alt="No image"
-                                     class="book-image">
+                                <img src="{{ asset('storage/' . $book->image) }}"
+                                     class="card-img-top bg-light"
+                                     style="height:250px; object-fit:contain;"
+                                     alt="No image">
                             @endif
+
+                            <div class="card-body d-flex flex-column">
+
+                                <h5 class="card-title">
+                                    {{ $book->name }}
+                                </h5>
+
+                                <p class="mb-1">
+                                    <strong>Tác giả:</strong>
+                                    {{ $book->author->name ?? 'Không rõ' }}
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Thể loại:</strong>
+                                    {{ $book->category->name ?? 'Không rõ' }}
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Còn lại:</strong>
+                                    {{ $book->available_quantity ?? 0 }}
+                                    quyển
+                                </p>
+
+                                <div class="mt-auto">
+                                    <a href="{{ route('login_student.detail', $book->id) }}"
+                                       class="btn btn-primary w-100">
+                                        📖 Xem Chi Tiết
+                                    </a>
+                                </div>
+
+                            </div>
 
                         </div>
 
-                        <h3>{{ $book->name }}</h3>
-
-                        <p><strong>Tác Giả:</strong> {{ $book->author->name ?? 'Không rõ' }}</p>
-                        <p><strong>Thể Loại:</strong> {{ $book->category->name ?? 'Không rõ' }}</p>
-                        <p><strong>Số quyển sách có sẵn:</strong> {{ $book->available_quantity ?? 0 }}</p>
-                        <a href="{{ route('login_student.detail', $book->id) }}"
-                           class="borrow-btn text-decoration-none text-center d-block">
-
-                            📖 Xem Chi Tiết
-
-                        </a>
                     </div>
+
                 @endforeach
+
             </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                {{ $books->links() }}
+            </div>
+
         </form>
     </div>
 

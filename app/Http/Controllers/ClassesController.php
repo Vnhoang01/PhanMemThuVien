@@ -9,9 +9,24 @@ use Illuminate\Http\Request;
 class ClassesController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $classes = Classes::with('major')->get();
+        $query = Classes::with('major');
+
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', "%{$keyword}%")
+                ->orWhereHas('major', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%");
+                });
+        }
+
+        $classes = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('classes.index', compact('classes'));
     }
 

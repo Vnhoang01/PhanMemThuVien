@@ -7,9 +7,23 @@ use Illuminate\Http\Request;
 
 class PublisherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $publishers = Publisher::all();
+        $query = Publisher::query();
+
+        // Tìm kiếm
+        if ($request->keyword) {
+            $keyword = $request->keyword;
+
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Phân trang
+        $publishers = $query
+            ->orderBy('id', 'desc')
+            ->paginate(3)
+            ->withQueryString();
+
         return view('publishers.index', compact('publishers'));
     }
 
